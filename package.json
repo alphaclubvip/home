@@ -12,5 +12,7 @@
     "sass": "^1.51.0",
     "sass-loader": "^12.6.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@heroicons/vue": "^1.0.6"
+  }
 }
