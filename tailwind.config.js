@@ -8,6 +8,10 @@ module.exports = {
             }
         }
     },
+    plugins: [
+        // ...
+        require('@tailwindcss/forms'),
+    ],
     content: [
         `components/**/*.{vue,js}`,
         `layouts/**/*.vue`,
