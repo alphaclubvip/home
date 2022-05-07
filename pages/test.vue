@@ -1,13 +1,10 @@
 <template>
-  <l-auto-width>
-    <div>
-        <!-- {{ $hello }} -->
-    </div>
-  </l-auto-width>
+  <LAutoWidth>
+    <div>TEST</div>
+  </LAutoWidth>
 </template>
 
 <script setup lang="ts">
-// // alternatively, you can also use it here
-const { $hello } = useNuxtApp();
-
+const { $providers } = useNuxtApp();
+console.log($providers);
 </script>
