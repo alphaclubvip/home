@@ -1,6 +1,6 @@
 <template>
-  <LAutoWidth>
-    <div>account: zz</div>
+  <LAutoWidth class="py-8">
+    <div>TEST PAGE</div>
   </LAutoWidth>
 </template>
 
