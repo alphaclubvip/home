@@ -1,4 +1,5 @@
 import Web3 from 'web3'
+import detectEthereumProvider from '@metamask/detect-provider'
 import ERC20_ABI from 'contracts/ERC20.json'
 import ERC721_ABI from 'contracts/ERC721.json'
 
@@ -10,6 +11,12 @@ export default defineNuxtPlugin(async function (nuxtApp) {
     const getChainId = async function (provider: Web3) {
         return await provider.eth.getChainId().catch();
     }
+
+    const counter = useState('counter', () => Math.round(Math.random() * 1000));
+    console.log('counter:', counter);
+
+    const provider = await detectEthereumProvider();
+    console.log('provider:', provider);
 
     return {
         provide: {
