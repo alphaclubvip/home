@@ -5,6 +5,8 @@ import {defineNuxtConfig} from 'nuxt'
 
 
 export default defineNuxtConfig({
+    ssr: false,
+
     publicRuntimeConfig: {
         ETH_RPOVIDER: process.env.ETH_RPOVIDER || 'https://eth.alphaclub.vip',
         BSC_PROVIDER: process.env.BSC_PROVIDER || 'https://bsc-dataseed.binance.org/',
