@@ -8,9 +8,30 @@ export default defineNuxtPlugin(async function (nuxtApp) {
     const ETH = new Web3(config.ETH_RPOVIDER);
     const BSC = new Web3(config.BSC_PROVIDER);
 
+    const connectWallet = async function () {
+        console.log('connectWallet');
+
+        const provider = await detectEthereumProvider();
+        console.log('provider:', provider);
+
+        if (provider) {
+            const web3 = new Web3(provider);
+            console.log('web3:', web3);
+
+            const accounts = await provider.request({ method: 'eth_requestAccounts' }).catch(async function (error) {
+                console.error('>>> Plugin[providers] connectWallet ~ get accounts:', error);
+            });
+
+            const account = useState('account', () => accounts[0]);
+            console.log('account:', account);
+        } else {
+            // no web3 provider
+        }
+    };
+
     const getChainId = async function (provider: Web3) {
         return await provider.eth.getChainId().catch();
-    }
+    };
 
     const counter = useState('counter', () => Math.round(Math.random() * 1000));
     console.log('counter:', counter);
@@ -29,8 +50,9 @@ export default defineNuxtPlugin(async function (nuxtApp) {
             fn: () => {
                 return {
                     getChainId: getChainId,
+                    connectWallet: connectWallet,
                 }
             }
         }
-    }
-})
+    };
+});

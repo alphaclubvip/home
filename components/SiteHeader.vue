@@ -25,11 +25,7 @@
         </div>
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <button type="button"
-                    class="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              <PlusSmIcon class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"/>
-              <span>New Job</span>
-            </button>
+            <ConnectWallet />
           </div>
           <div class="hidden md:ml-4 md:flex-shrink-0 md:flex md:items-center">
             <button type="button"
@@ -160,5 +156,4 @@
 <script setup>
 import {Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
 import {BellIcon, MenuIcon, XIcon} from '@heroicons/vue/outline'
-import {PlusSmIcon} from '@heroicons/vue/solid'
 </script>
