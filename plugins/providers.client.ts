@@ -33,12 +33,6 @@ export default defineNuxtPlugin(async function (nuxtApp) {
         return await provider.eth.getChainId().catch();
     };
 
-    const counter = useState('counter', () => Math.round(Math.random() * 1000));
-    console.log('counter:', counter);
-
-    const provider = await detectEthereumProvider();
-    console.log('provider:', provider);
-
     return {
         provide: {
             providers: () => {
