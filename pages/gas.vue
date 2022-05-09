@@ -2,6 +2,7 @@
 import { ethers } from "ethers";
 
 const transactions = ref([]);
+const blockNumber = ref();
 
 onMounted(async () => {
   console.log("/gas");
@@ -10,6 +11,8 @@ onMounted(async () => {
     if (useState("account").value) {
       const { $web3 } = useNuxtApp();
       const block = await $web3.getBlockWithTransactions("pending");
+
+      blockNumber.value = block.number;
       transactions.value = block.transactions;
     }
     await new Promise((r) => setTimeout(r, 2000));
@@ -26,10 +29,10 @@ onMounted(async () => {
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h1 class="text-xl font-semibold text-gray-900">
-            {{ transactions.length }} Transactions
+            {{ transactions.length ? transactions.length : '___' }} Transactions
           </h1>
           <p class="mt-2 text-sm text-gray-700">
-            Pending transactions in next block...
+            Pending transactions in next block #{{ blockNumber ? blockNumber : '___' }}
           </p>
         </div>
       </div>
@@ -91,17 +94,14 @@ onMounted(async () => {
                       {{ ethers.utils.formatUnits(tx.gasPrice, "gwei") }}
                     </td>
                     <td>
-                      <span v-if="tx.type === 2">{{
-                        ethers.utils.formatUnits(tx.maxFeePerGas, "gwei")
-                      }}</span>
+                      <span v-if="tx.type === 2">
+                        {{ ethers.utils.formatUnits(tx.maxFeePerGas, "gwei") }}
+                      </span>
                     </td>
                     <td>
-                      <span v-if="tx.type === 2">{{
-                        ethers.utils.formatUnits(
-                          tx.maxPriorityFeePerGas,
-                          "gwei"
-                        )
-                      }}</span>
+                      <span v-if="tx.type === 2">
+                        {{ ethers.utils.formatUnits(tx.maxPriorityFeePerGas, "gwei") }}
+                      </span>
                     </td>
                     <td>
                       <a href="#" class="text-indigo-600 hover:text-indigo-900"
