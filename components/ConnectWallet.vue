@@ -1,14 +1,19 @@
 <script setup lang="ts">
 const account = computed(() => {
-  return useState("account").value;
+  const account = useState("account").value;
+  if (account) {
+    return String(account);
+  } else {
+    return String();
+  }
 });
 
 const address = computed(() => {
-    if (account) {
-        return account.value.slice(0, 6) + '...' + account.value.slice(-4);
-    } else {
-        return ''
-    }
+  if (account) {
+    return account.value.slice(0, 6) + "..." + account.value.slice(-4);
+  } else {
+    return "";
+  }
 });
 
 async function connectWallet() {

@@ -5,8 +5,12 @@ import ERC721_ABI from 'contracts/ERC721.json';
 
 export default defineNuxtPlugin(async function (nuxtApp) {
     const config = useRuntimeConfig();
+
     const ETH = new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER);
+    const BSC = new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER);
+
     nuxtApp.provide('ETH', ETH);
+    nuxtApp.provide('BSC', BSC);
 
     // nuxtApp.provide('ethers', ethers);
     // nuxtApp.provide('web3', ETH);
@@ -21,29 +25,27 @@ export default defineNuxtPlugin(async function (nuxtApp) {
 
         if (!provider) {
             console.error('no web3 provider');
-        }
-        else {
+        } else {
             web3 = new ethers.providers.Web3Provider(provider)
-            const accounts = await web3.send("eth_requestAccounts", []).catch(async function (error) {
+            const accounts = await web3.send("eth_requestAccounts", []).catch(async function (error: Error) {
                 console.error('>>> Plugin[providers] connectWallet ~ get accounts:', error);
             });
             const account = useState('account', () => accounts[0]);
         }
     };
 
-    const getChainId = async function (provider) {
-        // return await provider.eth.getChainId().catch();
-        return ''
+    const getNetwork = async function (provider: ethers.providers.JsonRpcProvider) {
+        return await provider.getNetwork().catch(async function (error: Error) {
+            console.error('>>> Plugin[providers] getNetwork:', error);
+        });
     };
-
-    console.log('nuxtApp:', nuxtApp);
 
     return {
         provide: {
             fn: () => {
                 return {
-                    getChainId: getChainId,
                     connectWallet: connectWallet,
+                    getNetwork: getNetwork,
                 }
             }
         }
