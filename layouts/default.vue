@@ -9,11 +9,11 @@
 <style>
 
 </style>
-<script>
-import SiteFooter from "../components/SiteFooter";
-import SiteHeader from "../components/SiteHeader";
+<script setup lang="ts">
 
-export default {
-  components: {SiteHeader, SiteFooter}
-}
+// const route = useRoute()
+
+// useHead({
+//   meta: [{ name: 'og:title', content: `App Name - ${route.meta.title}` }]
+// })
 </script>

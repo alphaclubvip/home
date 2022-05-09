@@ -1,12 +1,23 @@
-<template>
-  <LAutoWidth class="py-8">
-    <div>TEST PAGE</div>
-  </LAutoWidth>
-</template>
-
 <script setup lang="ts">
+// definePageMeta({
+//   title: 'Some Page'
+// })
+
+import { ethers } from 'ethers'
+
 onMounted(async function () {
   console.log("/test");
+
+  // const { $ETH } = useNuxtApp();
+
+  // console.log($ETH);
+  // console.log(await $ETH.getBlockNumber());
+
+  // const balance = await $ETH.getBalance("lota.eth");
+
+  // console.log(await $ETH.getBalance("lota.eth"));
+
+  // console.log(ethers.utils.formatEther(balance));
 
   // const { $providers, $fn } = useNuxtApp();
 
@@ -17,6 +28,23 @@ onMounted(async function () {
   // console.log('chainId:', chainId, typeof(chainId))
 });
 
+// const web3 = computed(() => {
+//   const { $web3 } = useNuxtApp();
 
+//   return $web3;
+// });
 
+// async function kkk() {
+//   console.log(this.web3);
+// }
 </script>
+
+
+<template>
+  <LAutoWidth class="py-8">
+    <div>TEST PAGE</div>
+    <!-- <div>{{ web3 }}</div>
+    <button class="my-6" @click="kkk">666</button> -->
+  </LAutoWidth>
+</template>
+

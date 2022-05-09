@@ -1,3 +1,24 @@
+<script setup lang="ts">
+const account = computed(() => {
+  return useState("account").value;
+});
+
+const address = computed(() => {
+    if (account) {
+        return account.value.slice(0, 6) + '...' + account.value.slice(-4);
+    } else {
+        return ''
+    }
+});
+
+async function connectWallet() {
+  const { $fn } = useNuxtApp();
+  const web3fn = $fn();
+  await web3fn.connectWallet();
+}
+</script>
+
+
 <template>
   <div>
     <span v-if="account" class="font-mono">{{ address }}</span>
@@ -29,23 +50,3 @@
     </button>
   </div>
 </template>
-
-<script setup lang="ts">
-const account = computed(() => {
-  return useState("account").value;
-});
-
-const address = computed(() => {
-    if (account) {
-        return account.value.slice(0, 6) + '...' + account.value.slice(-4);
-    } else {
-        return ''
-    }
-});
-
-async function connectWallet() {
-  const { $fn } = useNuxtApp();
-  const web3fn = $fn();
-  await web3fn.connectWallet();
-}
-</script>
