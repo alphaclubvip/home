@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ethers } from "ethers";
+const { $ethers } = useNuxtApp();
 
+const ethers = $ethers;
 const transactions = ref([]);
 const blockNumber = ref();
 

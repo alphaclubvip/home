@@ -5,12 +5,9 @@ import detectEthereumProvider from '@metamask/detect-provider';
 
 export default defineNuxtPlugin(async function (nuxtApp) {
     const config = useRuntimeConfig();
-
-    const ETH = new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER);
-    const BSC = new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER);
-
-    nuxtApp.provide('ETH', ETH);
-    nuxtApp.provide('BSC', BSC);
+    nuxtApp.provide('ethers', ethers);
+    nuxtApp.provide('ETH', new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER));
+    nuxtApp.provide('BSC', new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER));
 
     const connectWallet = async function () {
         console.log('connectWallet');
