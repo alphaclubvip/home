@@ -1,4 +1,10 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
+
+<script setup>
+import {Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
+import {BellIcon, MenuIcon, XIcon} from '@heroicons/vue/outline'
+</script>
+
+
 <template>
   <Disclosure as="nav" class="bg-white shadow" v-slot="{ open }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -152,8 +158,3 @@
   @apply bg-indigo-50 border-indigo-500 text-indigo-700;
 }
 </style>
-
-<script setup>
-import {Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/vue'
-import {BellIcon, MenuIcon, XIcon} from '@heroicons/vue/outline'
-</script>
