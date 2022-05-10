@@ -72,9 +72,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <LAutoWidth class="py-8">
-      <div class="font-mono"></div>
-
+    <LAutoWidth class="py-8" v-if="transactions.length">
       <div class="mt-6 px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
@@ -124,33 +122,9 @@ onMounted(async () => {
                   </thead>
                   <tbody class="divide-y divide-gray-200 bg-white">
                     <tr v-for="tx in transactions" :key="tx.hash">
-                      <td
-                        class="
-                          whitespace-nowrap
-                          py-2
-                          pl-4
-                          pr-3
-                          text-sm text-gray-500
-                          sm:pl-6
-                        "
-                      >
-                        {{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}
-                      </td>
-                      <td
-                        class="
-                          whitespace-nowrap
-                          px-2
-                          py-2
-                          text-sm
-                          font-medium
-                          text-gray-900
-                        "
-                      >
-                        {{ tx.type }}
-                      </td>
-                      <td class="text-gray-900">
-                        {{ ethers.utils.formatUnits(tx.gasPrice, "gwei") }}
-                      </td>
+                      <td>{{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}</td>
+                      <td>{{ tx.type }}</td>
+                      <td>{{ ethers.utils.formatUnits(tx.gasPrice, "gwei") }}</td>
                       <td>
                         <span v-if="tx.type === 2">
                           {{

@@ -8,11 +8,6 @@ import { ethers } from 'ethers'
 onMounted(async function () {
   console.log("/test");
 
-
-
-  const { $web3 } = useNuxtApp();
-  console.log($web3);
-
   // console.log($ETH);
   // console.log(await $ETH.getBlockNumber());
 
