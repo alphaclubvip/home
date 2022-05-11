@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 
 const nextBlock = ref();
 const pendingTransactions = ref([]);
@@ -31,19 +31,23 @@ function gasPriceFromWei(n: ethers.BigNumber) {
 }
 
 const maxFeePerGas = computed(() => {
-  if (!pendingTransactionsByMaxFee.value.length) return 0;
+  if (!pendingTransactionsByMaxFee.value.length) {
+    return BigNumber.from('0');
+  }
 
   const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
 
-  return gasPriceFromWei(maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]));
+  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
 });
 
 const maxPriorityFeePerGas = computed(() => {
-  if (!pendingTransactions.value.length) return 0;
+  if (!pendingTransactions.value.length) {
+    return BigNumber.from('0');
+  }
 
   const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
 
-  return gasPriceFromWei(maxPriorityFeePerGasOf(pendingTransactions.value[i]));
+  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
 });
 
 onMounted(async () => {
@@ -104,7 +108,7 @@ onMounted(async () => {
               Max Priority Fee
             </dt>
             <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ maxPriorityFeePerGas }}
+              {{ gasPriceFromWei(maxPriorityFeePerGas) }}
             </dd>
           </div>
           <div class="flex flex-col mt-10 sm:mt-0">
@@ -114,7 +118,7 @@ onMounted(async () => {
               Max Fee
             </dt>
             <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ maxFeePerGas }}
+              {{ gasPriceFromWei(maxFeePerGas) }}
             </dd>
           </div>
           <div class="flex flex-col mt-10 sm:mt-0">
@@ -124,13 +128,7 @@ onMounted(async () => {
               Base Fee
             </dt>
             <dd class="order-1 text-5xl font-extrabold text-white">
-              {{
-                Math.ceil(
-                  parseFloat(
-                    ethers.utils.formatUnits(nextBlock.baseFeePerGas, "gwei")
-                  )
-                )
-              }}
+              {{ gasPriceFromWei(nextBlock.baseFeePerGas) }}
             </dd>
           </div>
         </dl>
