@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 
 const nextBlock = ref();
 const pendingTransactions = ref([]);
@@ -26,12 +26,16 @@ function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
   return maxFeePerGasOf(b).sub(maxFeePerGasOf(a)).toNumber();
 }
 
+function gasPriceFromWei(n: ethers.BigNumber) {
+  return Math.ceil(parseFloat(ethers.utils.formatUnits(n, "gwei")));
+}
+
 const maxFeePerGas = computed(() => {
   if (!pendingTransactionsByMaxFee.value.length) return 0;
 
   const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
 
-  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
+  return gasPriceFromWei(maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]));
 });
 
 const maxPriorityFeePerGas = computed(() => {
@@ -39,7 +43,7 @@ const maxPriorityFeePerGas = computed(() => {
 
   const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
 
-  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
+  return gasPriceFromWei(maxPriorityFeePerGasOf(pendingTransactions.value[i]));
 });
 
 onMounted(async () => {
@@ -100,11 +104,7 @@ onMounted(async () => {
               Max Priority Fee
             </dt>
             <dd class="order-1 text-5xl font-extrabold text-white">
-              {{
-                Math.ceil(
-                  ethers.utils.formatUnits(maxPriorityFeePerGas, "gwei")
-                )
-              }}
+              {{ maxPriorityFeePerGas }}
             </dd>
           </div>
           <div class="flex flex-col mt-10 sm:mt-0">
@@ -114,7 +114,7 @@ onMounted(async () => {
               Max Fee
             </dt>
             <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ Math.ceil(ethers.utils.formatUnits(maxFeePerGas, "gwei")) }}
+              {{ maxFeePerGas }}
             </dd>
           </div>
           <div class="flex flex-col mt-10 sm:mt-0">
@@ -126,18 +126,40 @@ onMounted(async () => {
             <dd class="order-1 text-5xl font-extrabold text-white">
               {{
                 Math.ceil(
-                  ethers.utils.formatUnits(nextBlock.baseFeePerGas, "gwei")
+                  parseFloat(
+                    ethers.utils.formatUnits(nextBlock.baseFeePerGas, "gwei")
+                  )
                 )
               }}
             </dd>
           </div>
         </dl>
+        <div class="text-center" v-else>
+          <a
+            href="#"
+            class="
+              mt-8
+              w-full
+              inline-flex
+              items-center
+              justify-center
+              px-5
+              py-3
+              border border-transparent
+              text-base
+              font-medium
+              rounded-md
+              text-indigo-600
+              bg-white
+              hover:bg-indigo-50
+              sm:w-auto
+            "
+          >
+            Connect Wallet to Start
+          </a>
+        </div>
       </div>
     </div>
-
-    <LAutoWidth class="mt-16">
-      <button class="jt-btn jt-btn-violet">XXX</button>
-    </LAutoWidth>
 
     <LAutoWidth class="py-8" v-if="nextBlock">
       <div class="mt-6 px-4 sm:px-6 lg:px-8">
@@ -153,8 +175,8 @@ onMounted(async () => {
             </h1>
             <p class="mt-2 text-sm text-gray-700">
               Pending transactions in next block
-              <template v-if="nextBlock"> #{{ nextBlock.number }} </template>
-              <template v-else> #___ </template>
+              <template v-if="nextBlock"> #{{ nextBlock.number }}</template>
+              <template v-else> #___</template>
             </p>
           </div>
         </div>
