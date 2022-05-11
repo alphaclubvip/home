@@ -27,9 +27,7 @@ function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
 }
 
 const maxFeePerGas = computed(() => {
-  if (!pendingTransactionsByMaxFee.value.length) {
-    return 0;
-  }
+  if (!pendingTransactionsByMaxFee.value.length) return 0;
 
   const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
 
@@ -37,9 +35,7 @@ const maxFeePerGas = computed(() => {
 });
 
 const maxPriorityFeePerGas = computed(() => {
-  if (!pendingTransactions.value.length) {
-    return 0;
-  }
+  if (!pendingTransactions.value.length) return 0;
 
   const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
 
@@ -62,7 +58,7 @@ onMounted(async () => {
       pendingTransactionsByMaxFee.value = Array(...block.transactions);
       pendingTransactionsByMaxFee.value.sort(sortTransactionByMaxFee);
     }
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 3000));
   }
 });
 </script>
@@ -139,6 +135,10 @@ onMounted(async () => {
       </div>
     </div>
 
+    <LAutoWidth class="mt-16">
+      <button class="jt-btn jt-btn-violet">XXX</button>
+    </LAutoWidth>
+
     <LAutoWidth class="py-8" v-if="nextBlock">
       <div class="mt-6 px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
@@ -196,9 +196,7 @@ onMounted(async () => {
                         {{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}
                       </td>
                       <td>
-                        <template v-if="tx.type === 2">
-                          {{ tx.type }}
-                        </template>
+                        <template v-if="tx.type === 2"> EIP1559 </template>
                       </td>
                       <td>
                         <template v-if="tx.type === 2">

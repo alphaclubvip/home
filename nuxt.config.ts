@@ -16,6 +16,7 @@ export default defineNuxtConfig({
 
     css: [
         '~/assets/css/base.scss',
+        '~/assets/css/preset.scss',
     ],
 
     // hooks: {
