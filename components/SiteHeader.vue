@@ -25,6 +25,23 @@ const navigations = [
     to: "/test",
   },
 ];
+
+const account = computed(() => {
+  const account = useState("account").value;
+  if (account) {
+    return String(account);
+  } else {
+    return String();
+  }
+});
+
+const address = computed(() => {
+  if (account) {
+    return account.value.slice(0, 6) + "..." + account.value.slice(-4);
+  } else {
+    return "";
+  }
+});
 </script>
 
 
@@ -75,7 +92,29 @@ const navigations = [
         </div>
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <ConnectWallet />
+            <span v-if="account" class="font-mono">{{ address }}</span>
+            <ConnectWallet
+              v-else
+              class="
+                relative
+                inline-flex
+                items-center
+                px-4
+                py-2
+                border border-transparent
+                text-sm
+                font-medium
+                rounded-md
+                text-white
+                bg-indigo-600
+                shadow-sm
+                hover:bg-indigo-700
+                focus:outline-none
+                focus:ring-2
+                focus:ring-offset-2
+                focus:ring-indigo-500
+              "
+            />
           </div>
           <div class="hidden md:ml-4 md:flex-shrink-0 md:flex md:items-center">
             <button

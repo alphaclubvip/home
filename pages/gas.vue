@@ -5,6 +5,35 @@ const nextBlock = ref();
 const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
 
+const account = computed(() => {
+  const account = useState("account").value;
+  if (account) {
+    return String(account);
+  } else {
+    return String();
+  }
+});
+
+const maxFeePerGas = computed(() => {
+  if (!pendingTransactionsByMaxFee.value.length) {
+    return BigNumber.from("0");
+  }
+
+  const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
+
+  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
+});
+
+const maxPriorityFeePerGas = computed(() => {
+  if (!pendingTransactions.value.length) {
+    return BigNumber.from("0");
+  }
+
+  const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
+
+  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
+});
+
 function maxFeePerGasOf(tx: ethers.Transaction) {
   return tx.type === 2 ? tx.maxFeePerGas : tx.gasPrice;
 }
@@ -29,26 +58,6 @@ function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
 function gasPriceFromWei(n: ethers.BigNumber) {
   return Math.ceil(parseFloat(ethers.utils.formatUnits(n, "gwei")));
 }
-
-const maxFeePerGas = computed(() => {
-  if (!pendingTransactionsByMaxFee.value.length) {
-    return BigNumber.from('0');
-  }
-
-  const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
-
-  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
-});
-
-const maxPriorityFeePerGas = computed(() => {
-  if (!pendingTransactions.value.length) {
-    return BigNumber.from('0');
-  }
-
-  const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
-
-  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
-});
 
 onMounted(async () => {
   console.log("/gas");
@@ -93,8 +102,32 @@ onMounted(async () => {
             </template>
           </p>
         </div>
+        <div class="text-center" v-if="!account">
+          <a
+            href="#"
+            class="
+              mt-8
+              w-full
+              inline-flex
+              items-center
+              justify-center
+              px-5
+              py-3
+              border border-transparent
+              text-base
+              font-medium
+              rounded-md
+              text-indigo-600
+              bg-white
+              hover:bg-indigo-50
+              sm:w-auto
+            "
+          >
+            Connect Wallet to Start
+          </a>
+        </div>
         <dl
-          v-if="nextBlock"
+          v-else-if="nextBlock"
           class="
             mt-10
             text-center
@@ -132,30 +165,7 @@ onMounted(async () => {
             </dd>
           </div>
         </dl>
-        <div class="text-center" v-else>
-          <a
-            href="#"
-            class="
-              mt-8
-              w-full
-              inline-flex
-              items-center
-              justify-center
-              px-5
-              py-3
-              border border-transparent
-              text-base
-              font-medium
-              rounded-md
-              text-indigo-600
-              bg-white
-              hover:bg-indigo-50
-              sm:w-auto
-            "
-          >
-            Connect Wallet to Start
-          </a>
-        </div>
+        
       </div>
     </div>
 
