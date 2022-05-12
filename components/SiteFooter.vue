@@ -8,8 +8,7 @@
           <LogoAC class="h-10 w-auto text-gray-400" />
 
           <p class="text-gray-500 text-base">
-            Making the world a better place through constructing elegant
-            hierarchies.
+            Seeking alpha in the crypto world.
           </p>
           <div class="flex space-x-6">
             <a
