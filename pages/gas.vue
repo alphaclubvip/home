@@ -134,20 +134,17 @@ onMounted(async () => {
               text-base
               font-medium
               rounded-md
-              text-gray-600
+              text-gray-900
               bg-white
               hover:bg-gray-50 hover:text-gray-900
               sm:w-auto
             "
           >
-            Connect Wallet to Start
+            <span class="animate-pulse"> Connect Wallet to Start </span>
           </ConnectWallet>
         </div>
-        <div
-          v-else-if="!nextBlock"
-          class="mt-12 text-center text-white text-2xl"
-        >
-          Launching...
+        <div v-else-if="!nextBlock" class="mt-16 flex justify-center">
+          <LogoAC class="px-auto h-16 w-auto animate-bounce text-gray-400" />
         </div>
         <div v-else>
           <dl
@@ -231,18 +228,19 @@ onMounted(async () => {
           rounded-md
           text-white
           bg-gray-600
+          hove:text-gray-500
           hover:bg-gray-700
         "
         @click="showTransactions"
       >
-        Show Transactions
+        <span class="animate-pulse"> Show Transactions </span>
       </button>
     </div>
 
     <GasTxsTable
+      v-if="details"
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
-      v-if="details"
     />
   </div>
 </template>
