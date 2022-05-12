@@ -74,14 +74,14 @@ const address = computed(() => {
           </div>
           <div class="flex-shrink-0 flex items-center">
             <img
-              class="block lg:hidden h-8 w-auto"
-              src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
-              alt="Workflow"
+              class="block lg:hidden h-10 w-auto"
+              src="/logo-ac.svg"
+              alt="AlphaClub.VIP"
             />
             <img
-              class="hidden lg:block h-8 w-auto"
-              src="https://tailwindui.com/img/logos/workflow-logo-indigo-600-mark-gray-800-text.svg"
-              alt="Workflow"
+              class="hidden lg:block h-10 w-auto"
+              src="/logo-ac-full.svg"
+              alt="AlphaClub.VIP"
             />
           </div>
           <div class="hidden md:ml-6 md:flex md:space-x-8">
