@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ethers, BigNumber } from "ethers";
 
+const track = ref(false);
+const interval = ref();
 const nextBlock = ref();
 const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
@@ -59,24 +61,35 @@ function gasPriceFromWei(n: ethers.BigNumber) {
   return Math.ceil(parseFloat(ethers.utils.formatUnits(n, "gwei")));
 }
 
-onMounted(async () => {
-  console.log("/gas");
+async function startToTrack() {
+  const { $web3 } = useNuxtApp();
+  const block = await $web3.getBlockWithTransactions("pending");
 
-  while (true) {
-    if (useState("account").value) {
-      const { $web3 } = useNuxtApp();
-      const block = await $web3.getBlockWithTransactions("pending");
+  nextBlock.value = block;
 
-      nextBlock.value = block;
+  pendingTransactions.value = Array(...block.transactions);
+  pendingTransactions.value.sort(sortTransactionByMaxPriorityFee);
 
-      pendingTransactions.value = Array(...block.transactions);
-      pendingTransactions.value.sort(sortTransactionByMaxPriorityFee);
+  pendingTransactionsByMaxFee.value = Array(...block.transactions);
+  pendingTransactionsByMaxFee.value.sort(sortTransactionByMaxFee);
+}
 
-      pendingTransactionsByMaxFee.value = Array(...block.transactions);
-      pendingTransactionsByMaxFee.value.sort(sortTransactionByMaxFee);
-    }
-    await new Promise((r) => setTimeout(r, 3000));
+function keepTracking() {
+  if (account.value) {
+    interval.value = window.setInterval(startToTrack, 3000)
+  } else {
+    clearInterval(interval.value);
+    interval.value = null;
   }
+}
+
+watch(account, async (account) => {
+  track.value = account ? true : false;
+  keepTracking();
+});
+
+onMounted(async () => {
+  keepTracking();
 });
 </script>
 
@@ -102,9 +115,8 @@ onMounted(async () => {
             </template>
           </p>
         </div>
-        <div class="text-center" v-if="!account">
-          <a
-            href="#"
+        <div v-if="!account" class="text-center">
+          <ConnectWallet
             class="
               mt-8
               w-full
@@ -124,10 +136,13 @@ onMounted(async () => {
             "
           >
             Connect Wallet to Start
-          </a>
+          </ConnectWallet>
+        </div>
+        <div v-else-if="!nextBlock" class="mt-12 text-center text-white text-2xl">
+          Launching...
         </div>
         <dl
-          v-else-if="nextBlock"
+          v-else
           class="
             mt-10
             text-center
@@ -165,7 +180,6 @@ onMounted(async () => {
             </dd>
           </div>
         </dl>
-        
       </div>
     </div>
 
