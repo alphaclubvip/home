@@ -140,7 +140,7 @@ onMounted(async () => {
               sm:w-auto
             "
           >
-            <span class="animate-pulse"> Connect Wallet to Start </span>
+            <span class="animate-pulse"> Connect Wallet to START </span>
           </ConnectWallet>
         </div>
         <div v-else-if="!nextBlock" class="mt-16 flex justify-center">
