@@ -183,6 +183,11 @@ onMounted(async () => {
       </div>
     </div>
 
+    <LAutoWidth class="py-8">
+      <GasLinks />
+    
+    </LAutoWidth>
+
     <LAutoWidth class="py-8" v-if="nextBlock">
       <div class="mt-6 px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center">
