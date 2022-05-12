@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ethers, BigNumber } from "ethers";
 
+const details = ref(false);
 const track = ref(false);
 const interval = ref();
 const nextBlock = ref();
@@ -83,6 +84,10 @@ function keepTracking() {
   }
 }
 
+function showTransactions() {
+  details.value = true;
+}
+
 watch(account, async (account) => {
   track.value = account ? true : false;
   keepTracking();
@@ -96,7 +101,7 @@ onMounted(async () => {
 
 <template>
   <div>
-    <div class="bg-indigo-800">
+    <div class="bg-gray-800">
       <div
         class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 lg:py-20"
       >
@@ -129,9 +134,9 @@ onMounted(async () => {
               text-base
               font-medium
               rounded-md
-              text-indigo-600
+              text-gray-600
               bg-white
-              hover:bg-indigo-50
+              hover:bg-gray-50 hover:text-gray-900
               sm:w-auto
             "
           >
@@ -144,55 +149,100 @@ onMounted(async () => {
         >
           Launching...
         </div>
-        <dl
-          v-else
-          class="
-            mt-10
-            text-center
-            sm:max-w-3xl sm:mx-auto sm:grid sm:grid-cols-3 sm:gap-8
-          "
-        >
-          <div class="flex flex-col">
-            <dt
-              class="order-2 mt-2 text-lg leading-6 font-medium text-indigo-200"
-            >
-              Max Priority Fee
-            </dt>
-            <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ gasPriceFromWei(maxPriorityFeePerGas) }}
-            </dd>
-          </div>
-          <div class="flex flex-col mt-10 sm:mt-0">
-            <dt
-              class="order-2 mt-2 text-lg leading-6 font-medium text-indigo-200"
-            >
-              Max Fee
-            </dt>
-            <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ gasPriceFromWei(maxFeePerGas) }}
-            </dd>
-          </div>
-          <div class="flex flex-col mt-10 sm:mt-0">
-            <dt
-              class="order-2 mt-2 text-lg leading-6 font-medium text-indigo-200"
-            >
-              Base Fee
-            </dt>
-            <dd class="order-1 text-5xl font-extrabold text-white">
-              {{ gasPriceFromWei(nextBlock.baseFeePerGas) }}
-            </dd>
-          </div>
-        </dl>
+        <div v-else>
+          <dl
+            class="
+              mt-10
+              text-center
+              sm:max-w-3xl sm:mx-auto sm:grid sm:grid-cols-3 sm:gap-8
+            "
+          >
+            <div class="flex flex-col">
+              <dt
+                class="
+                  order-2
+                  mt-2
+                  text-lg
+                  leading-6
+                  font-medium
+                  text-indigo-200
+                "
+              >
+                Max Priority Fee
+              </dt>
+              <dd class="order-1 text-5xl font-extrabold text-white">
+                {{ gasPriceFromWei(maxPriorityFeePerGas) }}
+              </dd>
+            </div>
+            <div class="flex flex-col mt-10 sm:mt-0">
+              <dt
+                class="
+                  order-2
+                  mt-2
+                  text-lg
+                  leading-6
+                  font-medium
+                  text-indigo-200
+                "
+              >
+                Max Fee
+              </dt>
+              <dd class="order-1 text-5xl font-extrabold text-white">
+                {{ gasPriceFromWei(maxFeePerGas) }}
+              </dd>
+            </div>
+            <div class="flex flex-col mt-10 sm:mt-0">
+              <dt
+                class="
+                  order-2
+                  mt-2
+                  text-lg
+                  leading-6
+                  font-medium
+                  text-indigo-200
+                "
+              >
+                Base Fee
+              </dt>
+              <dd class="order-1 text-5xl font-extrabold text-white">
+                {{ gasPriceFromWei(nextBlock.baseFeePerGas) }}
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </div>
 
-    <LAutoWidth class="py-8">
+    <LAutoWidth class="pt-8">
       <GasLinks />
     </LAutoWidth>
+
+    <div v-if="nextBlock && !details" class="mt-8 lg:mt-10 text-center">
+      <button
+        class="
+          inline-flex
+          items-center
+          justify-center
+          px-5
+          py-3
+          border border-transparent
+          text-base
+          font-medium
+          rounded-md
+          text-white
+          bg-gray-600
+          hover:bg-gray-700
+        "
+        @click="showTransactions"
+      >
+        Show Transactions
+      </button>
+    </div>
 
     <GasTxsTable
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
+      v-if="details"
     />
   </div>
 </template>
