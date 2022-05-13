@@ -1,3 +1,24 @@
+.desktop-nav {
+  @apply inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium;
+  @apply border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700;
+
+  &:exact-active {
+    @apply border-indigo-500 text-gray-900;
+  }
+}
+
+.mobi-nav {
+  @apply block w-full pl-3 pr-4 py-2 border-l-4 text-base font-medium sm:pl-5 sm:pr-6 text-left;
+}
+
+.mobi-nav-default {
+  @apply border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700;
+}
+
+.mobi-nav-current {
+  @apply bg-indigo-50 border-indigo-500 text-indigo-700;
+}
+
 .jt-btn {
   @apply w-full rounded-md border border-transparent shadow;
 

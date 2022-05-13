@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   buildModules: ['@nuxtjs/tailwindcss'],
 
   css: [
+    "~/assets/css/tailwind.css",
     '~/assets/css/base.scss',
     '~/assets/css/preset.scss',
   ],
@@ -29,5 +30,16 @@ export default defineNuxtConfig({
       { rel: 'manifest', href: '/manifest.json' }
     ],
     style: []
-  }
+  },
+
+  build: {
+    postcss: {
+      postcssOptions: {
+        plugins: {
+          tailwindcss: {},
+          autoprefixer: {},
+        },
+      },
+    },
+  },
 })
