@@ -82,9 +82,10 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
                       </template>
                     </td>
                     <td>
-                      <a href="#" class="text-indigo-600 hover:text-indigo-900"
-                        >View<span class="sr-only">, {{ tx.hash }}</span></a
-                      >
+                      <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                        View
+                        <span class="sr-only">, {{ tx.hash }}</span>
+                      </a>
                     </td>
                   </tr>
                 </tbody>
