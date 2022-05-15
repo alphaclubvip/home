@@ -211,7 +211,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="nextBlock.baseFeePerGas.add(10000000)"
+                  :bn-value="nextBlock.baseFeePerGas"
                   :decimals="9"
                   :padding="2"
                 />
