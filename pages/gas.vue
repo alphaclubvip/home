@@ -169,7 +169,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="maxPriorityFeePerGas"
+                  :bn-value="maxPriorityFeePerGas.add(10000000)"
                   :decimals="9"
                   :padding="2"
                 />
@@ -190,7 +190,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="maxFeePerGas"
+                  :bn-value="maxFeePerGas.add(10000000)"
                   :decimals="9"
                   :padding="2"
                 />
@@ -211,7 +211,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="nextBlock.baseFeePerGas"
+                  :bn-value="nextBlock.baseFeePerGas.add(10000000)"
                   :decimals="9"
                   :padding="2"
                 />
