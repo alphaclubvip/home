@@ -9,8 +9,6 @@ export default defineNuxtConfig({
     BSC_RPOVIDER: process.env.BSC_RPOVIDER || 'https://bsc-dataseed.binance.org/',
   },
 
-  buildModules: ['@nuxtjs/tailwindcss'],
-
   css: [
     "~/assets/css/tailwind.css",
     '~/assets/css/base.scss',
@@ -31,6 +29,13 @@ export default defineNuxtConfig({
     ],
     style: []
   },
+
+
+  buildModules: ['@nuxtjs/tailwindcss'],
+
+  plugins: [
+    // require('@tailwindcss/forms'),
+  ],
 
   build: {
     postcss: {

@@ -61,28 +61,24 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
                     </td>
                     <td>
                       <template v-if="tx.type === 2">
-                        {{ ethers.utils.formatUnits(tx.maxFeePerGas, "gwei") }}
+                        <FomattedBN :bn-value="tx.maxFeePerGas" :decimals="9" />
                       </template>
                       <template v-else>
-                        {{ ethers.utils.formatUnits(tx.gasPrice, "gwei") }}
+                        <FomattedBN :bn-value="tx.gasPrice" :decimals="9" />
                       </template>
                     </td>
                     <td>
                       <template v-if="tx.type === 2">
-                        {{
-                          ethers.utils.formatUnits(
-                            tx.maxPriorityFeePerGas,
-                            "gwei"
-                          )
-                        }}
+                        <FomattedBN
+                          :bn-value="tx.maxPriorityFeePerGas"
+                          :decimals="9"
+                        />
                       </template>
                       <template v-else>
-                        {{
-                          ethers.utils.formatUnits(
-                            tx.gasPrice.sub(nextBlock.baseFeePerGas),
-                            "gwei"
-                          )
-                        }}
+                        <FomattedBN
+                          :bn-value="nextBlock.baseFeePerGas"
+                          :decimals="9"
+                        />
                       </template>
                     </td>
                     <td>

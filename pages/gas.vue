@@ -168,7 +168,11 @@ onMounted(async () => {
                 Max Priority Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
-                {{ gasPriceFromWei(maxPriorityFeePerGas) }}
+                <FomattedBN
+                  :bn-value="maxPriorityFeePerGas"
+                  :decimals="9"
+                  :padding="2"
+                />
               </dd>
             </div>
             <div class="flex flex-col mt-10 sm:mt-0">
@@ -185,7 +189,11 @@ onMounted(async () => {
                 Max Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
-                {{ gasPriceFromWei(maxFeePerGas) }}
+                <FomattedBN
+                  :bn-value="maxFeePerGas"
+                  :decimals="9"
+                  :padding="2"
+                />
               </dd>
             </div>
             <div class="flex flex-col mt-10 sm:mt-0">
@@ -202,20 +210,23 @@ onMounted(async () => {
                 Base Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
-                {{ gasPriceFromWei(nextBlock.baseFeePerGas) }}
+                <FomattedBN
+                  :bn-value="nextBlock.baseFeePerGas"
+                  :decimals="9"
+                  :padding="2"
+                />
               </dd>
             </div>
           </dl>
         </div>
+
+        <!-- <GasPosition /> -->
       </div>
     </div>
 
-    <LAutoWidth class="pt-8">
-      <GasLinks />
-    </LAutoWidth>
-
-    <div v-if="nextBlock && !details" class="mt-8 lg:mt-10 text-center">
+    <LAutoWidth v-if="nextBlock" class="mt-8 lg:mt-10 flex justify-center">
       <button
+        v-if="!details"
         class="
           inline-flex
           items-center
@@ -235,12 +246,18 @@ onMounted(async () => {
       >
         <span class="animate-pulse"> Show Transactions </span>
       </button>
-    </div>
+    </LAutoWidth>
 
     <GasTxsTable
       v-if="details"
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
     />
+
+    <LAutoWidth class="pt-8">
+      <GasLinks />
+    </LAutoWidth>
+
+    <LAutoWidth> </LAutoWidth>
   </div>
 </template>
