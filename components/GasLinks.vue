@@ -34,7 +34,7 @@ const links = [
 <template>
   <div>
     <h2 class="text-gray-500 text-xs font-medium uppercase tracking-wide">
-      Gas Monitors
+      Other Gas Monitors
     </h2>
     <ul
       role="list"

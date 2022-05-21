@@ -7,6 +7,7 @@ const interval = ref();
 const nextBlock = ref();
 const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
+const percent = ref(0);
 
 const account = computed(() => {
   const account = useState("account").value;
@@ -22,7 +23,13 @@ const maxFeePerGas = computed(() => {
     return BigNumber.from("0");
   }
 
-  const i = Math.ceil((pendingTransactionsByMaxFee.value.length / 3) * 2);
+  const i = Math.min(
+    pendingTransactionsByMaxFee.value.length - 1,
+    pendingTransactionsByMaxFee.value.length -
+      Math.floor(
+        (pendingTransactionsByMaxFee.value.length / 1000) * percent.value
+      )
+  );
 
   return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
 });
@@ -32,7 +39,11 @@ const maxPriorityFeePerGas = computed(() => {
     return BigNumber.from("0");
   }
 
-  const i = Math.ceil((pendingTransactions.value.length / 3) * 2);
+  const i = Math.min(
+    pendingTransactions.value.length - 1,
+    pendingTransactions.value.length -
+      Math.floor((pendingTransactions.value.length / 1000) * percent.value)
+  );
 
   return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
 });
@@ -51,15 +62,15 @@ function sortTransactionByMaxPriorityFee(
   a: ethers.Transaction,
   b: ethers.Transaction
 ) {
-  return maxPriorityFeePerGasOf(b).sub(maxPriorityFeePerGasOf(a)).toNumber();
+  const feeA = maxPriorityFeePerGasOf(a);
+  const feeB = maxPriorityFeePerGasOf(b);
+  return feeB.sub(feeA).toNumber();
 }
 
 function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
-  return maxFeePerGasOf(b).sub(maxFeePerGasOf(a)).toNumber();
-}
-
-function gasPriceFromWei(n: ethers.BigNumber) {
-  return Math.ceil(parseFloat(ethers.utils.formatUnits(n, "gwei")));
+  const feeA = maxFeePerGasOf(a);
+  const feeB = maxFeePerGasOf(b);
+  return feeB.sub(feeA).toNumber();
 }
 
 async function startToTrack() {
@@ -96,6 +107,10 @@ watch(account, async (account) => {
 onMounted(async () => {
   keepTracking();
 });
+
+function updatePencent(value: number) {
+  percent.value = value;
+}
 </script>
 
 
@@ -169,7 +184,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="maxPriorityFeePerGas.add(10000000)"
+                  :bn-value="maxPriorityFeePerGas"
                   :decimals="9"
                   :padding="2"
                 />
@@ -190,7 +205,7 @@ onMounted(async () => {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
                 <FomattedBN
-                  :bn-value="maxFeePerGas.add(10000000)"
+                  :bn-value="maxFeePerGas"
                   :decimals="9"
                   :padding="2"
                 />
@@ -219,12 +234,14 @@ onMounted(async () => {
             </div>
           </dl>
         </div>
-
-        <!-- <GasPosition /> -->
       </div>
     </div>
 
-    <LAutoWidth v-if="nextBlock" class="mt-8 lg:mt-10 flex justify-center">
+    <LAutoWidth v-if="nextBlock">
+      <GasPosition @percent-updated="updatePencent" />
+    </LAutoWidth>
+
+    <LAutoWidth v-if="nextBlock" class="flex justify-center">
       <button
         v-if="!details"
         class="
@@ -257,7 +274,5 @@ onMounted(async () => {
     <LAutoWidth class="pt-8">
       <GasLinks />
     </LAutoWidth>
-
-    <LAutoWidth> </LAutoWidth>
   </div>
 </template>

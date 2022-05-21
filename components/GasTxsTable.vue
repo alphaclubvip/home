@@ -5,7 +5,7 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
 </script>
 
 <template>
-  <LAutoWidth class="py-8" v-if="nextBlock">
+  <LAutoWidth v-if="nextBlock">
     <div class="mt-6 px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -44,8 +44,8 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
                   <tr>
                     <th scope="col">Hash</th>
                     <th scope="col">Type</th>
-                    <th scope="col">Max Fee</th>
-                    <th scope="col">Max Priority Fee</th>
+                    <th scope="col">Max Fee (GWei)</th>
+                    <th scope="col">Max Priority Fee (GWei)</th>
                     <th scope="col">
                       <span class="sr-only">Edit</span>
                     </th>
@@ -76,7 +76,7 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
                       </template>
                       <template v-else>
                         <FomattedBN
-                          :bn-value="nextBlock.baseFeePerGas"
+                          :bn-value="tx.gasPrice.sub(nextBlock.baseFeePerGas)"
                           :decimals="9"
                         />
                       </template>
