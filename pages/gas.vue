@@ -7,7 +7,7 @@ const interval = ref();
 const nextBlock = ref();
 const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
-const percent = ref(0);
+const percent = ref(200);
 
 const account = computed(() => {
   const account = useState("account").value;

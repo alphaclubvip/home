@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
-const currentInstance = ref();
 const moving = ref(false);
 const percent = ref(200);
+
+const bar = ref<HTMLElement>();
+const slide = ref<HTMLElement>();
 
 const barWidth = ref(0);
 const barHeight = ref(0);
@@ -30,16 +32,16 @@ const slideStyleLeft = computed(() => {
 
 function init() {
   // bar
-  barWidth.value = currentInstance.value.ctx.$refs.bar.clientWidth;
-  barHeight.value = currentInstance.value.ctx.$refs.bar.clientHeight;
-  barLeft.value = currentInstance.value.ctx.$refs.bar.offsetLeft;
-  barTop.value = currentInstance.value.ctx.$refs.bar.offsetTop;
+  barWidth.value = bar.value.clientWidth;
+  barHeight.value = bar.value.clientHeight;
+  barLeft.value = bar.value.offsetLeft;
+  barTop.value = bar.value.offsetTop;
 
   // slide
-  slideWidth.value = currentInstance.value.ctx.$refs.slide.clientWidth;
-  slideHeight.value = currentInstance.value.ctx.$refs.slide.clientHeight;
-  slideLeft.value = currentInstance.value.ctx.$refs.slide.offsetLeft;
-  slideTop.value = currentInstance.value.ctx.$refs.slide.offsetTop;
+  slideWidth.value = slide.value.clientWidth;
+  slideHeight.value = slide.value.clientHeight;
+  slideLeft.value = slide.value.offsetLeft;
+  slideTop.value = slide.value.offsetTop;
 }
 
 const emit = defineEmits<{
@@ -47,7 +49,8 @@ const emit = defineEmits<{
 }>();
 
 onMounted(async () => {
-  currentInstance.value = getCurrentInstance();
+  bar.value = document.querySelector(".gas-position .bar");
+  slide.value = document.querySelector(".gas-position .slide");
   init();
   emit("percentUpdated", percent.value);
 });
@@ -89,56 +92,19 @@ function onMouseMove(e: MouseEvent) {
 function onMouseUp(e: MouseEvent) {
   moving.value = false;
 }
-
-defineExpose({
-  percent,
-});
 </script>
 
 <template>
   <div
-    class="py-12"
+    class="gas-position"
     @mousemove="onMouseMove"
     @mouseup="onMouseUp"
     @mouseleave="onMouseUp"
   >
-    <div
-      ref="bar"
-      class="
-        z-30
-        relative
-        bottom-0
-        left-0
-        mx-auto
-        w-11/12
-        md:w-5/6
-        h-5
-        bg-gradient-to-r
-        from-green-500
-        via-purple-400
-        to-pink-500
-        rounded-l-full rounded-r-full
-      "
-      @mousedown="onMouseDown"
-    >
+    <div class="bar" @mousedown="onMouseDown">
       <button
         type="button"
-        ref="slide"
-        class="
-          z-40
-          absolute
-          -top-1.5
-          block
-          w-16
-          h-8
-          bg-white
-          border-2 border-indigo-400
-          shadow-md shadow-indigo-500/50
-          rounded-l-full rounded-r-full
-          font-mono
-          text-gray-600 text-sm
-          select-none
-        "
+        class="slide"
         :style="slideStyleLeft"
         @mousedown="onMouseDown"
       >
@@ -146,7 +112,7 @@ defineExpose({
         <span class="ml-0.5">%</span>
       </button>
     </div>
-    <div class="mt-2 mx-auto w-11/12 md:w-5/6 flex justify-between">
+    <div class="mt-2 mx-auto w-11/12 md:w-5/6 flex justify-between select-none">
       <span class="text-green-500"> Cheaper </span>
       <span class="text-pink-500"> Faster </span>
     </div>
@@ -154,10 +120,15 @@ defineExpose({
 </template>
 
 <style lang="scss">
-// * {
-//   -webkit-user-select: none;
-//   -moz-user-select: none;
-//   -ms-user-select: none;
-//   user-select: none;
-// }
+.gas-position {
+  @apply py-12;
+
+  .bar {
+    @apply z-30 relative bottom-0 left-0 mx-auto w-11/12 md:w-5/6 h-5 bg-gradient-to-r from-green-500 via-purple-400 to-pink-500 rounded-l-full rounded-r-full;
+  }
+
+  .slide {
+    @apply z-40 absolute -top-1.5 block w-16 h-8 bg-white border-2 border-indigo-400 shadow-md shadow-indigo-500/50 rounded-l-full rounded-r-full font-mono text-gray-600 text-sm select-none;
+  }
+}
 </style>
