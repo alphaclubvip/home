@@ -113,22 +113,24 @@ function onMouseUp(e: MouseEvent) {
       </button>
     </div>
     <div class="mt-2 mx-auto w-11/12 md:w-5/6 flex justify-between select-none">
-      <span class="text-green-500"> Cheaper </span>
-      <span class="text-pink-500"> Faster </span>
+      <span class="text-green-500"> Cheaper / Save more </span>
+      <span class="text-pink-500"> Faster / More aggressive </span>
     </div>
   </div>
 </template>
 
 <style lang="scss">
 .gas-position {
-  @apply py-12;
-
   .bar {
-    @apply z-30 relative bottom-0 left-0 mx-auto w-11/12 md:w-5/6 h-5 bg-gradient-to-r from-green-500 via-purple-400 to-pink-500 rounded-l-full rounded-r-full;
+    @apply z-30 relative bottom-0 left-0;
+    @apply mx-auto w-11/12 md:w-5/6 h-5 bg-gradient-to-r from-green-500 via-purple-400 to-pink-500;
+    @apply rounded-l-full rounded-r-full;
   }
 
   .slide {
-    @apply z-40 absolute -top-1.5 block w-16 h-8 bg-white border-2 border-indigo-400 shadow-md shadow-indigo-500/50 rounded-l-full rounded-r-full font-mono text-gray-600 text-sm select-none;
+    @apply z-40 absolute -top-1.5 block;
+    @apply w-16 h-8 bg-gray-600 border-2 border-indigo-200 shadow-md shadow-indigo-600/50 rounded-l-full rounded-r-full;
+    @apply font-mono text-gray-50 text-sm select-none;
   }
 }
 </style>

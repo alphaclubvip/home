@@ -23,10 +23,7 @@ const props = defineProps({
 const objValue = computed(() => {
   const s = props.bnValue.toString().trim().replace(new RegExp("^0+"), "");
 
-  let o = {
-    i: "0",
-    f: "",
-  };
+  let o = { i: "0", f: "" };
 
   if (props.decimals < s.length) {
     const pos = s.length - props.decimals;
@@ -58,10 +55,7 @@ const objValue = computed(() => {
 });
 
 const disValue = computed(() => {
-  let o = {
-    i: [],
-    f: [],
-  };
+  let o = { i: [], f: [] };
 
   let i = objValue.value.i;
 
@@ -97,12 +91,11 @@ const disValue = computed(() => {
   <span>
     <span>{{ disValue.i }}</span>
     <span v-if="disValue.f.length">.</span>
-    <span class="formated-bn" v-for="part in disValue.f" :key="part">{{
-      part
-    }}</span>
+    <span class="formated-bn" v-for="(part, index) in disValue.f" :key="index">
+      {{ part }}
+    </span>
   </span>
 </template>
-
 
 <style scoped lang='scss'>
 .formated-bn {

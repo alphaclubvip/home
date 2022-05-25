@@ -5,92 +5,86 @@ const props = defineProps(["nextBlock", "pendingTransactions"]);
 </script>
 
 <template>
-  <LAutoWidth v-if="nextBlock">
-    <div class="mt-6 px-4 sm:px-6 lg:px-8">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-xl font-semibold text-gray-900">
-            {{
-              nextBlock.transactions.length
-                ? nextBlock.transactions.length
-                : "___"
-            }}
-            Pending Transactions
-          </h1>
-          <p class="mt-2 text-sm text-gray-700">
-            Pending transactions in next block
-            <template v-if="nextBlock"> #{{ nextBlock.number }}</template>
-            <template v-else> #___</template>
-          </p>
-        </div>
+  <LAutoWidth v-if="nextBlock" class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-xl font-semibold text-gray-900">
+          {{
+            nextBlock.transactions.length
+              ? nextBlock.transactions.length
+              : "___"
+          }}
+          Pending Transactions
+        </h1>
+        <p class="mt-2 text-sm text-gray-700">
+          Pending transactions in next block
+          <template v-if="nextBlock"> #{{ nextBlock.number }}</template>
+          <template v-else> #___</template>
+        </p>
       </div>
-      <div class="mt-8 flex flex-col">
-        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+    </div>
+    <div class="mt-8 flex flex-col">
+      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
           <div
-            class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8"
+            class="
+              overflow-hidden
+              shadow
+              ring-1 ring-black ring-opacity-5
+              md:rounded-lg
+            "
           >
-            <div
-              class="
-                overflow-hidden
-                shadow
-                ring-1 ring-black ring-opacity-5
-                md:rounded-lg
-              "
+            <table
+              class="min-w-full divide-y divide-gray-300 ac-table-s font-mono"
             >
-              <table
-                class="min-w-full divide-y divide-gray-300 ac-table-s font-mono"
-              >
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th scope="col">Hash</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Max Fee (GWei)</th>
-                    <th scope="col">Max Priority Fee (GWei)</th>
-                    <th scope="col">
-                      <span class="sr-only">Edit</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 bg-white">
-                  <tr v-for="tx in pendingTransactions" :key="tx.hash">
-                    <td>
-                      {{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}
-                    </td>
-                    <td>
-                      <template v-if="tx.type === 2"> EIP1559 </template>
-                    </td>
-                    <td>
-                      <template v-if="tx.type === 2">
-                        <FomattedBN :bn-value="tx.maxFeePerGas" :decimals="9" />
-                      </template>
-                      <template v-else>
-                        <FomattedBN :bn-value="tx.gasPrice" :decimals="9" />
-                      </template>
-                    </td>
-                    <td>
-                      <template v-if="tx.type === 2">
-                        <FomattedBN
-                          :bn-value="tx.maxPriorityFeePerGas"
-                          :decimals="9"
-                        />
-                      </template>
-                      <template v-else>
-                        <FomattedBN
-                          :bn-value="tx.gasPrice.sub(nextBlock.baseFeePerGas)"
-                          :decimals="9"
-                        />
-                      </template>
-                    </td>
-                    <td>
-                      <a href="#" class="text-indigo-600 hover:text-indigo-900">
-                        View
-                        <span class="sr-only">, {{ tx.hash }}</span>
-                      </a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col">Hash</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Max Fee (GWei)</th>
+                  <th scope="col">Max Priority Fee (GWei)</th>
+                  <th scope="col">
+                    <span class="sr-only">Edit</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 bg-white">
+                <tr v-for="tx in pendingTransactions" :key="tx.hash">
+                  <td>{{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}</td>
+                  <td>
+                    <template v-if="tx.type === 2"> EIP1559 </template>
+                  </td>
+                  <td>
+                    <template v-if="tx.type === 2">
+                      <FomattedBN :bn-value="tx.maxFeePerGas" :decimals="9" />
+                    </template>
+                    <template v-else>
+                      <FomattedBN :bn-value="tx.gasPrice" :decimals="9" />
+                    </template>
+                  </td>
+                  <td>
+                    <template v-if="tx.type === 2">
+                      <FomattedBN
+                        :bn-value="tx.maxPriorityFeePerGas"
+                        :decimals="9"
+                      />
+                    </template>
+                    <template v-else>
+                      <FomattedBN
+                        :bn-value="tx.gasPrice.sub(nextBlock.baseFeePerGas)"
+                        :decimals="9"
+                      />
+                    </template>
+                  </td>
+                  <td>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                      View
+                      <span class="sr-only">, {{ tx.hash }}</span>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

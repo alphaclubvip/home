@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 
 const details = ref(false);
 const track = ref(false);
@@ -18,9 +18,31 @@ const account = computed(() => {
   }
 });
 
+const baseFee = computed(() => {
+  if (!nextBlock) {
+    return ethers.BigNumber.from("0");
+  }
+
+  return ethers.BigNumber.from(parseInt(nextBlock.value.baseFeePerGas));
+});
+
+const maxPriorityFeePerGas = computed(() => {
+  if (!pendingTransactions.value.length) {
+    return ethers.BigNumber.from("0");
+  }
+
+  const i = Math.min(
+    pendingTransactions.value.length - 1,
+    pendingTransactions.value.length -
+      Math.floor((pendingTransactions.value.length / 1000) * percent.value)
+  );
+
+  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
+});
+
 const maxFeePerGas = computed(() => {
   if (!pendingTransactionsByMaxFee.value.length) {
-    return BigNumber.from("0");
+    return ethers.BigNumber.from("0");
   }
 
   const i = Math.min(
@@ -34,20 +56,6 @@ const maxFeePerGas = computed(() => {
   return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
 });
 
-const maxPriorityFeePerGas = computed(() => {
-  if (!pendingTransactions.value.length) {
-    return BigNumber.from("0");
-  }
-
-  const i = Math.min(
-    pendingTransactions.value.length - 1,
-    pendingTransactions.value.length -
-      Math.floor((pendingTransactions.value.length / 1000) * percent.value)
-  );
-
-  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
-});
-
 function maxFeePerGasOf(tx: ethers.Transaction) {
   return tx.type === 2 ? tx.maxFeePerGas : tx.gasPrice;
 }
@@ -55,7 +63,7 @@ function maxFeePerGasOf(tx: ethers.Transaction) {
 function maxPriorityFeePerGasOf(tx: ethers.Transaction) {
   return tx.type === 2
     ? tx.maxPriorityFeePerGas
-    : tx.gasPrice.sub(nextBlock.value.baseFeePerGas);
+    : tx.gasPrice.sub(baseFee.value);
 }
 
 function sortTransactionByMaxPriorityFee(
@@ -118,7 +126,7 @@ function updatePencent(value: number) {
   <div>
     <div class="bg-gray-800">
       <div
-        class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 lg:py-20"
+        class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 lg:pt-20"
       >
         <div class="max-w-4xl mx-auto text-center">
           <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
@@ -203,27 +211,38 @@ function updatePencent(value: number) {
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-gray-500">
                 <FomattedBN
-                  :bn-value="nextBlock.baseFeePerGas"
+                  :bn-value="baseFee"
                   :decimals="9"
                   :padding="2"
                 />
               </dd>
             </div>
           </dl>
+
+          <GasPosition @percent-updated="updatePencent" class="pt-20" />
         </div>
       </div>
     </div>
 
-    <LAutoWidth v-if="nextBlock">
-      <GasPosition @percent-updated="updatePencent" />
+    <LAutoWidth v-if="nextBlock" class="py-16 px-4 sm:px-6 lg:py-20 lg:px-8">
+      <GasCalculator
+        :max-priority-fee-per-gas="maxPriorityFeePerGas"
+        :max-fee-per-gas="maxFeePerGas"
+        :base-fee-per-gas="baseFee"
+      />
     </LAutoWidth>
 
-    <!-- <LAutoWidth>
-      <GasTips />
-    </LAutoWidth> -->
+    <div v-if="nextBlock" class="bg-gray-100">
+      <LAutoWidth class="py-16 px-4 sm:px-6 lg:py-20 lg:px-8">
+        <GasTips />
+      </LAutoWidth>
+    </div>
 
-    <LAutoWidth v-if="nextBlock" class="flex justify-center gap-4">
-      <button v-if="!details" class="jt-btn gray" @click="showTransactions">
+    <LAutoWidth
+      v-if="nextBlock && !details"
+      class="flex justify-center gap-4 py-20"
+    >
+      <button class="jt-btn gray" @click="showTransactions">
         <span class="animate-pulse"> Show Transactions </span>
       </button>
     </LAutoWidth>
@@ -232,6 +251,7 @@ function updatePencent(value: number) {
       v-if="details"
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
+      class="py-20"
     />
 
     <LAutoWidth class="pt-8">
