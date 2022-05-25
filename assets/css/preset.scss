@@ -8,83 +8,116 @@
 }
 
 .mobi-nav {
-  @apply block w-full pl-3 pr-4 py-2 border-l-4 text-base font-medium sm:pl-5 sm:pr-6 text-left;
+  .wrap {
+    @apply block w-full pl-3 pr-4 py-2 border-l-4 text-base font-medium sm:pl-5 sm:pr-6 text-left;
+    @apply border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700;
+  }
+
+  &:exact-active .warp {
+    @apply bg-indigo-50 border-indigo-500 text-indigo-700;
+  }
 }
 
-.mobi-nav-default {
-  @apply border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700;
-}
+.jt-btn-base {
+  @apply inline-flex items-center justify-center border border-transparent font-medium rounded-md;
 
-.mobi-nav-current {
-  @apply bg-indigo-50 border-indigo-500 text-indigo-700;
+  &:focus {
+    @apply outline-transparent ring-2 ring-offset-2;
+  }
+
+  &.gray {
+    @apply text-white bg-gray-600;
+
+    &:hover {
+      @apply text-gray-50 bg-gray-700;
+    }
+
+    &:focus {
+      @apply ring-gray-500;
+    }
+  }
+
+  &.white {
+    @apply text-gray-900 bg-white;
+
+    &:hover {
+      @apply text-gray-900 bg-gray-50;
+    }
+
+    &:focus {
+      @apply ring-gray-50;
+    }
+  }
+
+  &.indigo {
+    @apply text-white bg-indigo-600;
+
+    &:hover {
+      @apply text-indigo-50 bg-indigo-700;
+    }
+
+    &:focus {
+      @apply ring-indigo-500;
+    }
+  }
+
+  &.violet {
+    @apply text-violet-100 bg-violet-700;
+  
+    &:hover {
+      @apply text-violet-50 bg-violet-600;
+    }
+  
+    &:focus {
+      @apply ring-violet-500;
+    }
+  }
+
+  &.rose {
+    @apply text-rose-100 bg-rose-700;
+  
+    &:hover {
+      @apply text-rose-50 bg-rose-600;
+    }
+  
+    &:focus {
+      @apply ring-rose-500;
+    }
+  }
+
+  &.emerald {
+    @apply text-emerald-100 bg-emerald-700;
+  
+    &:hover {
+      @apply text-emerald-50 bg-emerald-600;
+    }
+  
+    &:focus {
+      @apply ring-emerald-500;
+    }
+  }
 }
 
 .jt-btn {
-  @apply w-full rounded-md border border-transparent shadow;
+  @apply jt-btn-base px-5 py-3 text-base shadow;
+}
 
-  &:focus {
-    @apply outline-none ring-2 ring-offset-2;
-  }
+.jt-btn-sm {
+  @apply jt-btn-base px-4 py-2 text-sm shadow-sm;
 }
 
 .jt-btn-md {
-  @apply jt-btn;
-  @apply px-3 sm:px-6 py-3;
-  @apply font-medium text-base;
+  @apply jt-btn-base px-6 py-3;
 }
 
 .jt-btn-lg {
-  @apply jt-btn;
-  @apply px-4 sm:px-8 py-4;
-  @apply font-medium text-lg;
+  @apply jt-btn-base px-8 py-4 text-lg;
 }
 
 .jt-btn-xl {
-  @apply jt-btn;
-  @apply px-5 sm:px-10 py-5;
-  @apply font-medium text-xl;
+  @apply jt-btn-base px-10 py-5 text-xl;
 }
 
-.jt-btn-center {
-  @apply inline-flex items-center justify-center;
-}
-
-.jt-btn {
-  @apply px-4 sm:px-8;
-}
-
-.jt-btn-violet {
-  @apply bg-violet-700 text-violet-100;
-
-  &:hover {
-    @apply bg-violet-600 text-white;
-  }
-
-  &:focus {
-    @apply ring-white ring-offset-violet-900;
-  }
-}
-
-.jt-btn-rose {
-  @apply bg-rose-700 text-rose-100;
-
-  &:hover {
-    @apply bg-rose-600 text-white;
-  }
-
-  &:focus {
-    @apply ring-white ring-offset-rose-900;
-  }
-}
-
-.jt-btn-emerald {
-  @apply bg-emerald-700 text-emerald-100;
-
-  &:hover {
-    @apply bg-emerald-600 text-white;
-  }
-
-  &:focus {
-    @apply ring-white ring-offset-emerald-900;
-  }
-}
+// .jt-btn-center {
+//   @apply inline-flex items-center justify-center;
+// }

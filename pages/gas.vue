@@ -137,23 +137,7 @@ function updatePencent(value: number) {
         </div>
         <div v-if="!account" class="text-center">
           <ConnectWallet
-            class="
-              mt-8
-              w-full
-              inline-flex
-              items-center
-              justify-center
-              px-5
-              py-3
-              border border-transparent
-              text-base
-              font-medium
-              rounded-md
-              text-gray-900
-              bg-white
-              hover:bg-gray-50 hover:text-gray-900
-              sm:w-auto
-            "
+            class="mt-8 jt-btn-md white focus:ring-offset-gray-800"
           >
             <span class="animate-pulse"> Connect Wallet to START </span>
           </ConnectWallet>
@@ -213,18 +197,11 @@ function updatePencent(value: number) {
             </div>
             <div class="flex flex-col mt-10 sm:mt-0">
               <dt
-                class="
-                  order-2
-                  mt-2
-                  text-lg
-                  leading-6
-                  font-medium
-                  text-indigo-200
-                "
+                class="order-2 mt-2 text-lg leading-6 font-medium text-gray-500"
               >
                 Base Fee
               </dt>
-              <dd class="order-1 text-5xl font-extrabold text-white">
+              <dd class="order-1 text-5xl font-extrabold text-gray-500">
                 <FomattedBN
                   :bn-value="nextBlock.baseFeePerGas"
                   :decimals="9"
@@ -241,26 +218,12 @@ function updatePencent(value: number) {
       <GasPosition @percent-updated="updatePencent" />
     </LAutoWidth>
 
-    <LAutoWidth v-if="nextBlock" class="flex justify-center">
-      <button
-        v-if="!details"
-        class="
-          inline-flex
-          items-center
-          justify-center
-          px-5
-          py-3
-          border border-transparent
-          text-base
-          font-medium
-          rounded-md
-          text-white
-          bg-gray-600
-          hove:text-gray-500
-          hover:bg-gray-700
-        "
-        @click="showTransactions"
-      >
+    <!-- <LAutoWidth>
+      <GasTips />
+    </LAutoWidth> -->
+
+    <LAutoWidth v-if="nextBlock" class="flex justify-center gap-4">
+      <button v-if="!details" class="jt-btn gray" @click="showTransactions">
         <span class="animate-pulse"> Show Transactions </span>
       </button>
     </LAutoWidth>
