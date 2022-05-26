@@ -1,18 +1,59 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <template>
   <div class="bg-white">
-    <div class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-24 lg:px-8 lg:grid lg:grid-cols-3 lg:gap-x-8">
+    <div
+      class="
+        max-w-7xl
+        mx-auto
+        py-16
+        px-4
+        sm:px-6
+        lg:py-24 lg:px-8 lg:grid lg:grid-cols-3 lg:gap-x-8
+      "
+    >
       <div>
-        <h2 class="text-base font-semibold text-indigo-600 uppercase tracking-wide">Everything you need</h2>
-        <p class="mt-2 text-3xl font-extrabold text-gray-900">All-in-one platform</p>
-        <p class="mt-4 text-lg text-gray-500">Ac euismod vel sit maecenas id pellentesque eu sed consectetur. Malesuada adipiscing sagittis vel nulla nec.</p>
+        <h2
+          class="
+            text-base
+            font-semibold
+            text-indigo-600
+            uppercase
+            tracking-wide
+          "
+        >
+          Everything you need
+        </h2>
+        <p class="mt-2 text-3xl font-extrabold text-gray-900">
+          All-in-one platform
+        </p>
+        <p class="mt-4 text-lg text-gray-500">
+          Ac euismod vel sit maecenas id pellentesque eu sed consectetur.
+          Malesuada adipiscing sagittis vel nulla nec.
+        </p>
       </div>
       <div class="mt-12 lg:mt-0 lg:col-span-2">
-        <dl class="space-y-10 sm:space-y-0 sm:grid sm:grid-cols-2 sm:grid-rows-4 sm:grid-flow-col sm:gap-x-6 sm:gap-y-10 lg:gap-x-8">
+        <dl
+          class="
+            space-y-10
+            sm:space-y-0
+            sm:grid
+            sm:grid-cols-2
+            sm:grid-rows-4
+            sm:grid-flow-col
+            sm:gap-x-6
+            sm:gap-y-10
+            lg:gap-x-8
+          "
+        >
           <div v-for="feature in features" :key="feature.name" class="relative">
             <dt>
-              <CheckIcon class="absolute h-6 w-6 text-green-500" aria-hidden="true" />
-              <p class="ml-9 text-lg leading-6 font-medium text-gray-900">{{ feature.name }}</p>
+              <CheckIcon
+                class="absolute h-6 w-6 text-green-500"
+                aria-hidden="true"
+              />
+              <p class="ml-9 text-lg leading-6 font-medium text-gray-900">
+                {{ feature.name }}
+              </p>
             </dt>
             <dd class="mt-2 ml-9 text-base text-gray-500">
               {{ feature.description }}
@@ -25,22 +66,48 @@
 </template>
 
 <script setup>
-import { CheckIcon } from '@heroicons/vue/outline'
+import { CheckIcon } from "@heroicons/vue/outline";
 
 const features = [
   {
-    name: 'Invite team members',
-    description: 'You can manage phone, email and chat conversations all from a single mailbox.',
+    name: "Lorem ipsum dolor sit amet",
+    description:
+      "Donec eu sapien feugiat, ultricies lacus ut, blandit lacus. Sed sit amet laoreet augue.",
   },
-  { name: 'List view', description: 'You can manage phone, email and chat conversations all from a single mailbox.' },
   {
-    name: 'Keyboard shortcuts',
-    description: 'You can manage phone, email and chat conversations all from a single mailbox.',
+    name: "Etiam ultricies",
+    description:
+      "Suspendisse commodo, orci eu facilisis ultricies, justo felis venenatis lectus.",
   },
-  { name: 'Calendars', description: 'You can manage phone, email and chat conversations all from a single mailbox.' },
-  { name: 'Notifications', description: 'Find what you need with advanced filters, bulk actions, and quick views.' },
-  { name: 'Boards', description: 'Find what you need with advanced filters, bulk actions, and quick views.' },
-  { name: 'Reporting', description: 'Find what you need with advanced filters, bulk actions, and quick views.' },
-  { name: 'Mobile app', description: 'Find what you need with advanced filters, bulk actions, and quick views.' },
-]
+  {
+    name: "Nunc suscipit quam",
+    description:
+      "Praesent et lacinia justo. Quisque non metus ut leo bibendum laoreet.",
+  },
+  {
+    name: "Praesent varius",
+    description:
+      "Sed interdum eros vitae diam ullamcorper egestas. Quisque at nibh malesuada.",
+  },
+  {
+    name: "Maecenas volutpat",
+    description:
+      "Proin condimentum magna sit amet arcu ornare, vehicula porta sapien condimentum.",
+  },
+  {
+    name: "Nulla lobortis",
+    description:
+      "Aliquam dictum, orci eu varius facilisis, nisi odio imperdiet est.",
+  },
+  {
+    name: "Curabitur mollis",
+    description:
+      "Etiam mollis egestas pulvinar. Morbi sollicitudin felis sed purus aliquam.",
+  },
+  {
+    name: "Cras non",
+    description:
+      "hasellus euismod sed sem nec fringilla. Praesent convallis, turpis et malesuada.",
+  },
+];
 </script>
