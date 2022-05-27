@@ -20,7 +20,9 @@ function toggle() {
         </h1>
         <p class="mt-2 text-sm text-gray-700">
           pending Transactions the next block
-          <span> #<FormattedBN :bn-value="nextBlock.number" /> </span>
+          <span>
+            #<FormattedBN :bn-value="ethers.BigNumber.from(nextBlock.number)" />
+          </span>
         </p>
       </div>
 
