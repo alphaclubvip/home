@@ -33,25 +33,25 @@
             </p>
           </dd>
         </div>
+
         <div>
           <dt class="text-lg leading-6 font-medium text-gray-900">
-            Max Priority Fee
+            Max Priority Fee & Max Fee
           </dt>
           <dd class="mt-2 text-base text-gray-500">
-            <span class="font-mono">
-              If (Max Priority Fee + Base Fee) &lt; Max Fee,
-            </span>
-            notice that all Max Priority Fee will be
-            <span class="uppercase font-semibold">consumed.</span>
-            So if you care about the transaction fee, you know what to do.
-          </dd>
-        </div>
-        <div>
-          <dt class="text-lg leading-6 font-medium text-gray-900">Max Fee</dt>
-          <dd class="mt-2 text-base text-gray-500">
-            Usually, Max Fee would not be fully cosumed,
-            <span class="font-mono"> (Max Priority Fee + Base Fee) </span>
-            will be the actual gas price.
+            <p>
+              <span class="font-mono">
+                If (Max Priority Fee + Base Fee) &lt; Max Fee,
+              </span>
+              notice that all Max Priority Fee will be
+              <span class="uppercase font-semibold">consumed.</span>
+              So if you care about the transaction fee, you know what to do.
+            </p>
+            <p class="mt-1">
+              Usually, Max Fee would not be fully cosumed,
+              <span class="font-mono"> (Max Priority Fee + Base Fee) </span>
+              will be the actual gas price.
+            </p>
           </dd>
         </div>
 
