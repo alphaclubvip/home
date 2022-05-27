@@ -68,7 +68,13 @@ function toggle() {
                   :class="{ bottom: index > frontIndex }"
                 >
                   <td>{{ index + 1 }}</td>
-                  <td>{{ tx.hash.slice(0, 10) }}...{{ tx.hash.slice(-4) }}</td>
+                  <td>
+                    <SlicedStr
+                      :value="tx.hash"
+                      :max-length="17"
+                      :suffix-length="4"
+                    />
+                  </td>
                   <td>
                     <template v-if="tx.type === 2"> EIP1559 </template>
                   </td>
