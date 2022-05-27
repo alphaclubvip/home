@@ -21,6 +21,7 @@ export default defineNuxtPlugin(async function (nuxtApp) {
     web3AccountAvatar.value = "";
 
     if (1 === web3ChainId.value) {
+      console.log("Getting ENS Name...");
       await web3.lookupAddress(web3Account.value).then(_ensName => {
         web3AccountENS.value = _ensName;
       }).catch(async function (e: Error) {
@@ -28,6 +29,7 @@ export default defineNuxtPlugin(async function (nuxtApp) {
       });
 
       if (web3AccountENS.value) {
+        console.log("Getting NFT Avatar...");
         await web3.getAvatar(web3Account.value).then(_avatar => {
           if (_avatar) {
             web3AccountAvatar.value = _avatar;
@@ -40,10 +42,10 @@ export default defineNuxtPlugin(async function (nuxtApp) {
   }
 
   nuxtApp.provide('connectWallet', async function () {
-    console.log('connectWallet...');
+    console.log('Connectting Wallet...');
 
+    // provider
     const provider = await detectEthereumProvider();
-
     if (!provider) {
       console.error('no web3 provider');
     } else {

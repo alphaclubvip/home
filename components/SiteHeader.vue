@@ -22,14 +22,7 @@ const navigations = [
 ];
 
 const account = useWeb3Account();
-
-const address = computed(() => {
-  if (account) {
-    return account.value.slice(0, 6) + "..." + account.value.slice(-4);
-  } else {
-    return "";
-  }
-});
+const address = useWeb3Address();
 </script>
 
 
