@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
 
+const account = useWeb3Account();
+const chainId = useWeb3ChainId();
+
 onMounted(async function () {
   console.log("/test");
 
@@ -37,6 +40,7 @@ onMounted(async function () {
 <template>
   <LAutoWidth class="py-8">
     <div>TEST PAGE</div>
+    <div>{{ account }} {{ typeof account }} {{ chainId }}</div>
     <!-- <div>{{ web3 }}</div>
     <button class="my-6" @click="kkk">666</button> -->
   </LAutoWidth>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 async function connectWallet() {
-  const { $fn } = useNuxtApp();
-  const web3fn = $fn();
-  await web3fn.connectWallet();
+  const { $connectWallet } = useNuxtApp();
+  await $connectWallet();
 }
 </script>
 

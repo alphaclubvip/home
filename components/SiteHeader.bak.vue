@@ -21,14 +21,7 @@ const navigations = [
   },
 ];
 
-const account = computed(() => {
-  const account = useState("account").value;
-  if (account) {
-    return String(account);
-  } else {
-    return String();
-  }
-});
+const account = useWeb3Account();
 
 const address = computed(() => {
   if (account) {

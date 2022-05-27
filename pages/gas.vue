@@ -9,14 +9,7 @@ const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
 const percent = ref(200);
 
-const account = computed(() => {
-  const account = useState("account").value;
-  if (account) {
-    return String(account);
-  } else {
-    return String();
-  }
-});
+const account = useWeb3Account();
 
 const baseFee = computed(() => {
   if (!nextBlock) {
