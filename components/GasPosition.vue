@@ -1,5 +1,17 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
+
+const props = defineProps({
+  length: {
+    type: Number,
+    default: 0,
+  },
+  frontIndex: {
+    type: Number,
+    default: 0,
+  },
+});
+
 const moving = ref(false);
 const percent = ref(200);
 
@@ -114,6 +126,9 @@ function onMouseUp(e: MouseEvent) {
     </div>
     <div class="mt-2 mx-auto w-11/12 md:w-5/6 flex justify-between select-none">
       <span class="text-green-500"> Cheaper / Save more </span>
+      <span class="hidden lg:block font-mono text-gray-400">
+        Frontrun {{ length - frontIndex }} transactions of {{ length }}
+      </span>
       <span class="text-pink-500"> Faster / More aggressive </span>
     </div>
   </div>

@@ -237,7 +237,12 @@ onUnmounted(() => {
             </div>
           </dl>
 
-          <GasPosition @percent-updated="updatePencent" class="pt-20" />
+          <GasPosition
+            @percent-updated="updatePencent"
+            :length="length"
+            :front-index="frontIndex"
+            class="pt-20"
+          />
         </div>
       </div>
     </div>
