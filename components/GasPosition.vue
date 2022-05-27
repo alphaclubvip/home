@@ -108,7 +108,7 @@ function onMouseUp(e: MouseEvent) {
         :style="slideStyleLeft"
         @mousedown="onMouseDown"
       >
-        <FomattedBN :bn-value="ethers.BigNumber.from(percent)" :decimals="1" />
+        <FormattedBN :bn-value="ethers.BigNumber.from(percent)" :decimals="1" />
         <span class="ml-0.5">%</span>
       </button>
     </div>

@@ -166,7 +166,7 @@ watch(baseFee, () => {
   <dl class="grid grid-cols-1 md:grid-cols-2 overflow-hidden">
     <div class="px-4 py-5 sm:p-6">
       <dt class="text-base font-normal text-gray-500">
-        Estimated Transaction Fee
+        Transaction Fee
       </dt>
       <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
         <div
@@ -180,14 +180,14 @@ watch(baseFee, () => {
           "
         >
           <span>Ξ</span>
-          <FomattedBN :bn-value="bnWei" :decimals="18" />
+          <FormattedBN :bn-value="bnWei" :decimals="18" />
         </div>
       </dd>
     </div>
 
     <div class="px-4 py-5 sm:p-6">
       <dt class="text-base font-normal text-gray-500">
-        Estimated Max Transaction Fee
+        Max Transaction Fee
       </dt>
       <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
         <div
@@ -201,7 +201,7 @@ watch(baseFee, () => {
           "
         >
           <span>Ξ</span>
-          <FomattedBN :bn-value="bnMaxWei" :decimals="18" />
+          <FormattedBN :bn-value="bnMaxWei" :decimals="18" />
         </div>
       </dd>
     </div>

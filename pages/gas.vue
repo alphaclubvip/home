@@ -2,8 +2,7 @@
 import { ethers } from "ethers";
 
 const details = ref(false);
-const track = ref(false);
-const interval = ref();
+const tracking = ref();
 const nextBlock = ref();
 const pendingTransactions = ref([]);
 const pendingTransactionsByMaxFee = ref([]);
@@ -19,18 +18,30 @@ const baseFee = computed(() => {
   return ethers.BigNumber.from(parseInt(nextBlock.value.baseFeePerGas));
 });
 
+const length = computed(() => {
+  return Math.min(
+    pendingTransactions.value.length,
+    pendingTransactionsByMaxFee.value.length
+  );
+});
+
+const frontIndex = computed(() => {
+  if (length.value) {
+    return Math.min(
+      length.value - 1,
+      length.value - Math.floor((length.value / 1000) * percent.value)
+    );
+  }
+
+  return 0;
+});
+
 const maxPriorityFeePerGas = computed(() => {
   if (!pendingTransactions.value.length) {
     return ethers.BigNumber.from("0");
   }
 
-  const i = Math.min(
-    pendingTransactions.value.length - 1,
-    pendingTransactions.value.length -
-      Math.floor((pendingTransactions.value.length / 1000) * percent.value)
-  );
-
-  return maxPriorityFeePerGasOf(pendingTransactions.value[i]);
+  return maxPriorityFeePerGasOf(pendingTransactions.value[frontIndex.value]);
 });
 
 const maxFeePerGas = computed(() => {
@@ -38,15 +49,7 @@ const maxFeePerGas = computed(() => {
     return ethers.BigNumber.from("0");
   }
 
-  const i = Math.min(
-    pendingTransactionsByMaxFee.value.length - 1,
-    pendingTransactionsByMaxFee.value.length -
-      Math.floor(
-        (pendingTransactionsByMaxFee.value.length / 1000) * percent.value
-      )
-  );
-
-  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[i]);
+  return maxFeePerGasOf(pendingTransactionsByMaxFee.value[frontIndex.value]);
 });
 
 function maxFeePerGasOf(tx: ethers.Transaction) {
@@ -74,7 +77,7 @@ function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
   return feeB.sub(feeA).toNumber();
 }
 
-async function startToTrack() {
+async function track() {
   const { $web3 } = useNuxtApp();
   const block = await $web3.getBlockWithTransactions("pending");
 
@@ -89,10 +92,24 @@ async function startToTrack() {
 
 function keepTracking() {
   if (account.value) {
-    interval.value = window.setInterval(startToTrack, 3000);
+    startTracking();
   } else {
-    clearInterval(interval.value);
-    interval.value = null;
+    stopTracking();
+  }
+}
+
+function startTracking() {
+  if (!tracking.value) {
+    console.log("Start tracking...");
+    tracking.value = window.setInterval(track, 3000);
+  }
+}
+
+function stopTracking() {
+  if (tracking.value) {
+    console.log("Stop tracking...");
+    clearInterval(tracking.value);
+    tracking.value = null;
   }
 }
 
@@ -100,18 +117,25 @@ function showTransactions() {
   details.value = true;
 }
 
-watch(account, async (account) => {
-  track.value = account ? true : false;
-  keepTracking();
+function updatePencent(value: number) {
+  percent.value = value;
+}
+
+watch(account, () => {
+  if (account.value) {
+    startTracking();
+  } else {
+    stopTracking();
+  }
 });
 
 onMounted(async () => {
   keepTracking();
 });
 
-function updatePencent(value: number) {
-  percent.value = value;
-}
+onUnmounted(() => {
+  stopTracking();
+});
 </script>
 
 
@@ -127,8 +151,8 @@ function updatePencent(value: number) {
           </h2>
           <p class="mt-3 text-xl text-indigo-200 sm:mt-4">
             <template v-if="nextBlock">
-              According to {{ nextBlock.transactions.length }} pending
-              transactions in the next BLOCK#{{ nextBlock.number }}
+              Based on {{ nextBlock.transactions.length }} pending transactions
+              in the next BLOCK#{{ nextBlock.number }}
             </template>
             <template v-else>
               Track pending transactions (mempool) on Ethereum Blockchain
@@ -168,7 +192,7 @@ function updatePencent(value: number) {
                 Max Priority Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
-                <FomattedBN
+                <FormattedBN
                   :bn-value="maxPriorityFeePerGas"
                   :decimals="9"
                   :padding="2"
@@ -189,7 +213,7 @@ function updatePencent(value: number) {
                 Max Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-white">
-                <FomattedBN
+                <FormattedBN
                   :bn-value="maxFeePerGas"
                   :decimals="9"
                   :padding="2"
@@ -203,11 +227,7 @@ function updatePencent(value: number) {
                 Base Fee
               </dt>
               <dd class="order-1 text-5xl font-extrabold text-gray-500">
-                <FomattedBN
-                  :bn-value="baseFee"
-                  :decimals="9"
-                  :padding="2"
-                />
+                <FormattedBN :bn-value="baseFee" :decimals="9" :padding="2" />
               </dd>
             </div>
           </dl>
@@ -231,19 +251,11 @@ function updatePencent(value: number) {
       </LAutoWidth>
     </div>
 
-    <LAutoWidth
-      v-if="nextBlock && !details"
-      class="flex justify-center gap-4 py-20"
-    >
-      <button class="jt-btn gray" @click="showTransactions">
-        <span class="animate-pulse"> Show Transactions </span>
-      </button>
-    </LAutoWidth>
-
     <GasTxsTable
-      v-if="details"
+      v-if="nextBlock"
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
+      :front-index="frontIndex"
       class="py-20"
     />
 
