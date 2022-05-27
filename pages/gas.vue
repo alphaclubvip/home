@@ -152,7 +152,12 @@ onUnmounted(() => {
           <p class="mt-3 text-xl text-indigo-200 sm:mt-4">
             <template v-if="nextBlock">
               Based on {{ nextBlock.transactions.length }} pending transactions
-              in the next BLOCK#{{ nextBlock.number }}
+              in the next BLOCK
+              <span>
+                #<FormattedBN
+                  :bn-value="ethers.BigNumber.from(nextBlock.number)"
+                />
+              </span>
             </template>
             <template v-else>
               Track pending transactions (mempool) on Ethereum Blockchain
@@ -256,7 +261,6 @@ onUnmounted(() => {
       :next-block="nextBlock"
       :pending-transactions="pendingTransactions"
       :front-index="frontIndex"
-      class="py-20"
     />
 
     <LAutoWidth class="pt-8">
