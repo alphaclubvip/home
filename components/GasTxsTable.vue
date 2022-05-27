@@ -29,12 +29,8 @@ function toggle() {
       <div>
         <button class="jt-btn gray gap-2" @click="toggle">
           <span> Details </span>
-          <ChevronDownIcon
-            v-if="!show"
-            class="block h-5 w-5"
-            aria-hidden="true"
-          />
-          <ChevronUpIcon v-else class="block h-5 w-5" aria-hidden="true" />
+          <ChevronDownIcon v-if="!show" class="block h-5 w-5" />
+          <ChevronUpIcon v-else class="block h-5 w-5" />
         </button>
       </div>
     </div>
