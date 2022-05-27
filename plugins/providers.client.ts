@@ -10,12 +10,37 @@ export default defineNuxtPlugin(async function (nuxtApp) {
   nuxtApp.provide('BSC', new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER));
 
   const web3Account = useState<string>('web3.account', () => "");
+  const web3AccountENS = useState<string>('web3.account.ens', () => "");
+  const web3AccountAvatar = useState<string>('web3.account.avatar', () => "");
   const web3ChainId = useState<number>('web3.chainId', () => 0);
   // const ABI_ERC20 = useState('ABI_ERC20', () => ERC20_ABI);
   // const ABI_ERC721 = useState('ABI_ERC721', () => ERC721_ABI);
 
+  const resolveENS = async (web3: ethers.providers.Web3Provider) => {
+    web3AccountENS.value = "";
+    web3AccountAvatar.value = "";
+
+    if (1 === web3ChainId.value) {
+      await web3.lookupAddress(web3Account.value).then(_ensName => {
+        web3AccountENS.value = _ensName;
+      }).catch(async function (e: Error) {
+        console.error('>>> Plugin[providers] connectWallet ~ lookupAddress:', e)
+      });
+
+      if (web3AccountENS.value) {
+        await web3.getAvatar(web3Account.value).then(_avatar => {
+          if (_avatar) {
+            web3AccountAvatar.value = _avatar;
+          }
+        }).catch(async function (e: Error) {
+          console.error('>>> Plugin[providers] connectWallet ~ getAvatar:', e)
+        });
+      }
+    }
+  }
+
   nuxtApp.provide('connectWallet', async function () {
-    console.log('connectWallet');
+    console.log('connectWallet...');
 
     const provider = await detectEthereumProvider();
 
@@ -24,33 +49,35 @@ export default defineNuxtPlugin(async function (nuxtApp) {
     } else {
       const web3 = new ethers.providers.Web3Provider(provider);
 
-      const accounts = await web3.send("eth_requestAccounts", []).catch(async function (error: Error) {
-        console.error('>>> Plugin[providers] connectWallet ~ get accounts:', error);
-      });
-
-      if (accounts) {
+      await web3.send("eth_requestAccounts", []).then(async (_accounts) => {
         nuxtApp.provide('web3', web3);
 
         // account
-        web3Account.value = ethers.utils.getAddress(accounts[0]);
+        web3Account.value = ethers.utils.getAddress(_accounts[0]);
 
         // sync chain ID
-        await web3.send("eth_chainId", []).then((chainIdHex: string) => {
-          web3ChainId.value = parseInt(chainIdHex);
-        }).catch(async function (error: Error) {
-          console.error('>>> Plugin[providers] connectWallet ~ eth_chainId:', error)
+        await web3.send("eth_chainId", []).then((_chainId: string) => {
+          web3ChainId.value = parseInt(_chainId);
+        }).catch(async function (e: Error) {
+          console.error('>>> Plugin[providers] connectWallet ~ eth_chainId:', e)
         });
 
         // on: accountsChanged
-        provider.on('accountsChanged', (accounts: string[]) => {
-          web3Account.value = ethers.utils.getAddress(accounts[0]);
+        provider.on('accountsChanged', async (_accountsChanged: string[]) => {
+          web3Account.value = ethers.utils.getAddress(_accountsChanged[0]);
+          await resolveENS(web3);
         });
 
         // on: chainChanged
-        provider.on('chainChanged', async (chainId: string) => {
-          web3ChainId.value = parseInt(chainId);
+        provider.on('chainChanged', async (_chainId: string) => {
+          web3ChainId.value = parseInt(_chainId);
         });
-      }
+
+        // ENS
+        await resolveENS(web3);
+      }).catch(async function (e: Error) {
+        console.error('>>> Plugin[providers] connectWallet ~ get accounts:', e);
+      });
     }
   });
 });
