@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ethers, BigNumber } from "ethers";
-import { ArrowsExpandIcon, BanIcon } from "@heroicons/vue/outline";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
 
 const show = ref(false);
 const props = defineProps(["nextBlock", "pendingTransactions", "frontIndex"]);
@@ -28,13 +28,13 @@ function toggle() {
 
       <div>
         <button class="jt-btn gray gap-2" @click="toggle">
-          <ArrowsExpandIcon
+          <span> Details </span>
+          <ChevronDownIcon
             v-if="!show"
             class="block h-5 w-5"
             aria-hidden="true"
           />
-          <BanIcon v-else class="block h-5 w-5" aria-hidden="true" />
-          <span> Details </span>
+          <ChevronUpIcon v-else class="block h-5 w-5" aria-hidden="true" />
         </button>
       </div>
     </div>
