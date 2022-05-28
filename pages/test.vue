@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// import { ethers } from "ethers";
 
 const account = useWeb3Account();
 const address = useWeb3Address();
@@ -14,16 +13,14 @@ onMounted(async function () {
 </script>
 
 <template>
-  <LAutoWidth class="py-8">
-    <div>TEST PAGE</div>
-    <div>
-      SliceStr:
-      <SlicedStr :value="account" :max-length="13" />
-    </div>
-    <div>{{ accountENS }} {{ account }} {{ accountAvatar }} {{ chainId }}</div>
-    <div>{{ address }}</div>
-    <div><FormattedBN :bn-value="balance" :decimals="18" /> ETH</div>
-    <!-- <div>{{ web3 }}</div>
+  <Connected>
+    <LAutoWidth class="py-8">
+      <div>TEST PAGE</div>
+      <div>
+        <FormattedBN :bn-value="balance" :decimals="18" /> ETH
+      </div>
+      <!-- <div>{{ web3 }}</div>
     <button class="my-6" @click="kkk">666</button> -->
-  </LAutoWidth>
+    </LAutoWidth>
+  </Connected>
 </template>

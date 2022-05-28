@@ -63,11 +63,11 @@
 
   &.violet {
     @apply text-violet-100 bg-violet-700;
-  
+
     &:hover {
       @apply text-violet-50 bg-violet-600;
     }
-  
+
     &:focus {
       @apply ring-violet-500;
     }
@@ -75,11 +75,11 @@
 
   &.rose {
     @apply text-rose-100 bg-rose-700;
-  
+
     &:hover {
       @apply text-rose-50 bg-rose-600;
     }
-  
+
     &:focus {
       @apply ring-rose-500;
     }
@@ -87,11 +87,11 @@
 
   &.emerald {
     @apply text-emerald-100 bg-emerald-700;
-  
+
     &:hover {
       @apply text-emerald-50 bg-emerald-600;
     }
-  
+
     &:focus {
       @apply ring-emerald-500;
     }
@@ -121,3 +121,43 @@
 // .jt-btn-center {
 //   @apply inline-flex items-center justify-center;
 // }
+
+.tx-table {
+  thead tr th {
+    @apply whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900;
+
+    &:first-child {
+      @apply pl-4 pr-3 sm:pl-6;
+    }
+
+    &:last-child {
+      @apply relative pl-3 pr-4 sm:pr-6;
+    }
+  }
+
+  tbody tr {
+    td {
+      @apply whitespace-nowrap px-2 py-2 text-sm text-gray-900;
+
+      &:first-child {
+        @apply pl-4 pr-3 text-sm sm:pl-6;
+      }
+
+      &:last-child {
+        @apply relative pl-3 pr-4 text-right text-sm font-medium sm:pr-6;
+      }
+    }
+
+    &.bottom {
+      @apply bg-rose-200;
+    }
+
+    &:nth-child(even) {
+      @apply bg-gray-50;
+
+      &.bottom {
+        @apply bg-rose-50;
+      }
+    }
+  }
+}

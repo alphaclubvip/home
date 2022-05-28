@@ -1,3 +1,5 @@
+.components.gen.js
+
 .vscode
 .idea
 
@@ -8,3 +10,4 @@ node_modules
 .cache
 .output
 .env
+
