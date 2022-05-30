@@ -1,9 +1,32 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
+import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
 
+
+const provider = useWeb3Provider();
+const signer = ref<ethers.Signer>();
+const config = useRuntimeConfig();
 const account = useWeb3Account();
 const balance = useWeb3Balance();
+const nativeSymbol = useNativeSymbol();
+const nativeDecimals = useNativeDecimals();
+
+const contract = ref<ethers.Contract>();
+
+
+
+watch(account, async () => {
+  if (account.value) {
+
+    signer.value = provider.value.getSigner();
+    console.log("signer:", signer.value);
+
+    contract.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, signer.value);
+    console.log(contract.value);
+  }
+});
+
 
 const showTable = ref(false);
 function toggleTable() {
@@ -44,7 +67,7 @@ const placeHolderBulkTransferDiff = [
   '0x0000000000000000000000000000000000000002, 0.2',
   '0x0000000000000000000000000000000000000003, 0.3',
   '',
-  '-- An address, a comma, a space, and the amount for it; in each line.',
+  '-- An address, a comma, and the amount for it; in each line.',
 ];
 const placeHolderBulkTransferSame = [
   '0x0000000000000000000000000000000000000001',
@@ -63,7 +86,8 @@ const listLable = computed(() => {
 });
 
 const tokenAddress = ref<string>("");
-const amount = ref<string>("");
+const amountSame = ref<string>("");
+const amountDonate = ref<string>("0.005");
 const list = ref<string>("");
 const lines = computed(() => {
   let rlt = [];
@@ -76,31 +100,79 @@ const lines = computed(() => {
   return rlt;
 });
 
-const addresses = ref<string[]>([]);
-const amounts = ref<ethers.BigNumber[]>([]);
+// tx: _recipients, _amount(s), value, donate
+const txRecipients = ref<string[]>([]);
+const txAmount = computed(() => {
+  if (amountSame.value) {
+    return ethers.utils.parseUnits(amountSame.value, transferDecimals.value)
+  }
+
+  return ethers.BigNumber.from(0);
+});
+const txAmounts = ref<ethers.BigNumber[]>([]);
+const txValue = computed(() => {
+  if (isERC20.value) {
+    return txDonate.value;
+  } else {
+    return amountAccu.value.add(txDonate.value);
+  }
+});
+const txDonate = computed(() => {
+  if (amountDonate.value) {
+    return ethers.utils.parseUnits(amountDonate.value, nativeDecimals.value)
+  }
+
+  return ethers.BigNumber.from(0);
+});
+
+//
+const amountAccu = computed(() => {
+  if (txAmounts.value.length) {
+    let rlt = ethers.BigNumber.from(0);
+
+    txAmounts.value.forEach((_value, _index) => {
+      rlt = rlt.add(_value);
+    });
+
+    return rlt;
+  }
+
+  return ethers.BigNumber.from(0);
+});
 const rows = computed(() => {
   let rlt = [];
-  for (let i: number = 0; i < Math.min(addresses.value.length, amounts.value.length); i++) {
+  for (let i: number = 0; i < Math.min(txRecipients.value.length, txAmounts.value.length); i++) {
     rlt.push({
-      address: addresses.value[i],
-      amount: amounts.value[i],
+      address: txRecipients.value[i],
+      amount: txAmounts.value[i],
     });
   }
   return rlt;
 });
 
-const amountError = ref<string>("");
 const listError = ref<string>("");
 
-const decimals = computed(() => {
+const transferDecimals = computed(() => {
   return 18;
 });
+
+
+const formatAmount = function (s: String, decimals: number) {
+  return s
+    .replace("。", ".")
+    .replace(/[^\d.]/g, "")
+    .replace(/\.{2,}/g, ".")
+    .replace(".", "#")
+    .replace(/\./g, "")
+    .replace("#", ".")
+    .replace(new RegExp(`^(\\d+)\\.(\\d{0,${decimals}}).*$`), "$1.$2");
+};
 
 
 function touchAddresses() {
   let arrAddress = [];
 
-  addresses.value = arrAddress;
+  txRecipients.value = arrAddress;
 
   lines.value.forEach((_line: string, _i: number) => {
     const arrLine = _line.split(',');
@@ -112,18 +184,18 @@ function touchAddresses() {
         arrAddress.push(address);
       }
     } catch (e) {
-      listError.value = `Invalid address: "${p0}"`;
+      listError.value = `Line #${_i} - Invalid address: "${p0}"`;
       return;
     }
   });
 
-  addresses.value = arrAddress;
+  txRecipients.value = arrAddress;
 }
 
 function touchAmounts() {
   let arrAmount = [];
 
-  amounts.value = arrAmount;
+  txAmounts.value = arrAmount;
 
   lines.value.forEach((_line: string, _i: number) => {
     const arrLine = _line.split(',');
@@ -131,7 +203,7 @@ function touchAmounts() {
     if (arrLine.length > 1) {
       const p1 = arrLine[1].trim();
       try {
-        const amount = ethers.BigNumber.from(ethers.utils.parseUnits(p1, decimals.value));
+        const amount = ethers.BigNumber.from(ethers.utils.parseUnits(p1, transferDecimals.value));
         arrAmount.push(amount);
       } catch (e) {
         listError.value = `Line #${_i + 1} - Invalid amount: "${p1}"`;
@@ -143,57 +215,48 @@ function touchAmounts() {
     }
   });
 
-  amounts.value = arrAmount;
+  txAmounts.value = arrAmount;
 }
 
 function touchSameAmounts() {
   let arrAmount = [];
 
-  amounts.value = arrAmount;
-  const s = amount.value.trim();
+  txAmounts.value = arrAmount;
 
-  try {
-    const _amount = ethers.utils.parseUnits(s, decimals.value);
-    addresses.value.forEach((_address: string, _i: number) => {
+  if (amountSame.value) {
+    const _amount = ethers.utils.parseUnits(amountSame.value, transferDecimals.value);
+    txRecipients.value.forEach((_address: string, _i: number) => {
       arrAmount.push(_amount);
     });
 
-    amounts.value = arrAmount;
-  } catch (e) {
-    amountError.value = `Invalid address: "${s}"`;
-    return;
+    txAmounts.value = arrAmount;
   }
 }
 
+watch(amountDonate, () => {
+  amountDonate.value = formatAmount(amountDonate.value, nativeDecimals.value);
+});
 
-watch(amount, () => {
-  amountError.value = '';
-  amounts.value = [];
-
-  const s: string = amount.value ? amount.value.trim() : '';
-
-  if (!s) {
-    amountError.value = ``;
-    return;
-  }
-
+watch(amountSame, () => {
+  txAmounts.value = [];
+  amountSame.value = formatAmount(amountSame.value, transferDecimals.value);
   touchSameAmounts();
 });
 
 watch(type, () => {
   if (isSameAmount.value) {
-    if (addresses.value) {
-      list.value = addresses.value.join('\n');
+    if (txRecipients.value) {
+      list.value = txRecipients.value.join('\n');
       return;
     }
   } else {
-    if (addresses.value && amounts.value) {
+    if (txRecipients.value && txAmounts.value) {
       let arr = [];
-      for (let i: number = 0; i < addresses.value.length; i++) {
-        if (amounts.value.length > i) {
-          arr.push(`${addresses.value[i]}, ${ethers.utils.formatUnits(amounts.value[i], decimals.value)}`);
+      for (let i: number = 0; i < txRecipients.value.length; i++) {
+        if (txAmounts.value.length > i) {
+          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(txAmounts.value[i], transferDecimals.value)}`);
         } else {
-          arr.push(`${addresses.value[i]}, `);
+          arr.push(`${txRecipients.value[i]}, `);
         }
       }
       list.value = arr.join('\n');
@@ -208,8 +271,8 @@ watch(list, () => {
   let arrAddress = [];
   let arrAmount = [];
 
-  addresses.value = arrAddress;
-  amounts.value = arrAmount;
+  txRecipients.value = arrAddress;
+  txAmounts.value = arrAmount;
 
   touchAddresses();
 
@@ -230,8 +293,8 @@ onMounted(async function () {
     <SBulkHero />
     <Connected>
       <LAutoWidth class="py-16">
-        <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-          <div class="sm:col-span-3">
+        <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6">
+          <div class="md:col-span-3">
             <label for="type" class="block font-medium text-gray-700">
               Type
             </label>
@@ -257,21 +320,23 @@ onMounted(async function () {
             </p>
           </div>
 
-          <div v-if="isSameAmount" class="sm:col-span-3">
+          <div v-if="isSameAmount" class="md:col-span-3 lg:col-span-2">
             <label for="amount" class="block font-medium text-gray-700">
               Amount
             </label>
-            <div class="mt-1">
+            <div class="mt-1 relative">
               <input type="text" name="amount" id="amount"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="amount" />
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+                v-model="amountSame" />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-400 sm:text-sm">
+                  {{ unit }}
+                </span>
+              </div>
             </div>
-            <p v-if="amountError" class="mt-2 text-sm font-semibold text-rose-500">
-              {{ amountError }}
-            </p>
           </div>
 
-          <div v-if="isERC20" class="sm:col-span-6">
+          <div v-if="isERC20" class="md:col-span-6">
             <label for="token-address" class="block font-medium text-gray-700">
               Token Contract Address
             </label>
@@ -282,26 +347,61 @@ onMounted(async function () {
             </div>
           </div>
 
-          <div class="sm:col-span-6">
+          <div class="md:col-span-6">
             <label for="about" class="block font-medium text-gray-700">
               {{ listLable }}
             </label>
             <div class="mt-1">
               <textarea id="about" name="about" rows="10"
-                class="block w-full focus:ring-indigo-500 focus:border-indigo-500  border border-gray-300 rounded-md shadow-sm font-mono text-sm placeholder:text-gray-400"
+                class="block w-full focus:ring-indigo-500 focus:border-indigo-500 border border-gray-300 rounded-md shadow-sm font-mono text-sm placeholder:text-gray-400"
                 v-model="list" :placeholder="placeHolderBulkTransfer" />
             </div>
             <p v-if="listError" class="mt-2 text-sm font-semibold text-rose-500">
               {{ listError }}
             </p>
           </div>
+
+
+          <div class="md:col-span-3 lg:col-span-2">
+            <label for="donate" class="block font-medium text-gray-700">
+              Dontate
+            </label>
+            <div class="mt-1 relative">
+              <input type="text" name="donate" id="donate"
+                class="shadow-sm focus:ring-green-500 focus:border-indigo-500 block w-full bg-green-50 pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+                v-model="amountDonate" />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-400 sm:text-sm">
+                  {{ nativeSymbol }}
+                </span>
+              </div>
+            </div>
+            <p class="mt-2 text-sm font-semibold text-green-600">
+              Donate to help us build more useful tools.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          txAmount: {{ txAmount }}
+        </div>
+        <div>
+          txValue: {{ txValue }}
+        </div>
+        <div>
+          txDonate: {{ txDonate }}
+        </div>
+        <div>
+          ALPHA_CLUB_001: {{ config.ALPHA_CLUB_001 }}
         </div>
 
         <div v-if="0 < rows.length" class="mt-8 flex flex-col">
           <div class="flex flex-col gap-6 sm:flex sm:flex-row sm:justify-between">
             <div class="sm:flex-auto">
               <h1 class="text-xl font-semibold text-gray-900">
-                {{ rows.length }} transfers.
+                Total
+                <FormattedBN :bn-value="amountAccu" :decimals="transferDecimals" />
+                {{ unit }}
               </h1>
               <p class="mt-2 text-sm text-gray-700">
                 {{ rows.length }} transfers.
@@ -320,12 +420,7 @@ onMounted(async function () {
           <div v-if="showTable" class="mt-8 flex flex-col">
             <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                <div class="
-              overflow-hidden
-              shadow
-              ring-1 ring-black ring-opacity-5
-              md:rounded-lg
-            ">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full divide-y divide-gray-300 tx-table font-mono">
                     <thead class="bg-gray-50">
                       <tr>
@@ -339,7 +434,7 @@ onMounted(async function () {
                         <td>{{ index + 1 }}</td>
                         <td>{{ row.address }}</td>
                         <td>
-                          <FormattedBN :bn-value="row.amount" :decimals="decimals" />
+                          <FormattedBN :bn-value="row.amount" :decimals="transferDecimals" />
                           {{ unit }}
                         </td>
                       </tr>
@@ -350,7 +445,6 @@ onMounted(async function () {
             </div>
           </div>
         </div>
-
       </LAutoWidth>
     </Connected>
   </div>

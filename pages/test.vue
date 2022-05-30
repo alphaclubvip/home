@@ -19,6 +19,9 @@ onMounted(async function () {
       <div>
         <FormattedBN :bn-value="balance" :decimals="18" /> ETH
       </div>
+      <div>
+        {{ chainId }}
+      </div>
       <!-- <div>{{ web3 }}</div>
     <button class="my-6" @click="kkk">666</button> -->
     </LAutoWidth>
