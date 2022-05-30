@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ethers, BigNumber } from "ethers";
+import { ethers } from "ethers";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
 
 const show = ref(false);

@@ -7,6 +7,8 @@ export default defineNuxtConfig({
     publicRuntimeConfig: {
         ETH_RPOVIDER: process.env.ETH_RPOVIDER || 'https://eth.alphaclub.vip',
         BSC_RPOVIDER: process.env.BSC_RPOVIDER || 'https://bsc-dataseed.binance.org/',
+
+        ALPHACLUB001: process.env.ALPHACLUB001 || '0x7306ED5c02356F3a0bE3D59bE8786Bd691cDE04D',
     },
 
     css: [
@@ -29,7 +31,6 @@ export default defineNuxtConfig({
         ],
         style: []
     },
-
 
     buildModules: [
         '@nuxtjs/tailwindcss',

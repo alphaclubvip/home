@@ -24,11 +24,11 @@ const navigations = [
 const userMenuItems = [
   {
     name: "Your Profile",
-    to: "profile",
+    to: "/profile",
   },
   {
     name: "Setting",
-    to: "setting",
+    to: "/setting",
   },
 ];
 
