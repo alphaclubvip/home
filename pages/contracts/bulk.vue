@@ -3,27 +3,21 @@ import { ethers } from "ethers";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
 import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
 
-
-const provider = useWeb3Provider();
-const signer = ref<ethers.Signer>();
+const signer = useWeb3Signer();
 const config = useRuntimeConfig();
 const account = useWeb3Account();
 const balance = useWeb3Balance();
 const nativeSymbol = useNativeSymbol();
 const nativeDecimals = useNativeDecimals();
 
-const contract = ref<ethers.Contract>();
-
-
+const contractBulk = ref<ethers.Contract>();
+const contractERC20 = ref<ethers.Contract>();
 
 watch(account, async () => {
   if (account.value) {
 
-    signer.value = provider.value.getSigner();
-    console.log("signer:", signer.value);
-
-    contract.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, signer.value);
-    console.log(contract.value);
+    contractBulk.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, signer.value);
+    console.log(contractBulk.value);
   }
 });
 
