@@ -1,12 +1,5 @@
 import { ethers } from 'ethers';
 
-
-export const useWeb3Provider = () => useState<ethers.providers.Web3Provider>('web3.provider');
-export const useWeb3Signer = () => computed(() => {
-  const provider = useWeb3Provider();
-  return provider.value.getSigner();
-});
-
 export const useWeb3ChainId = () => useState<number>('web3.chainId');
 export const useWeb3Balance = () => useState<ethers.BigNumber>('web3.balance');
 export const useWeb3Account = () => useState<string>('web3.account');
@@ -31,8 +24,9 @@ export const useNativeSymbol = () => computed(() => {
 
   switch (chainId.value) {
     case 1:
-    case 4:
       return 'ETH';
+    case 4:
+      return 'T-ETH';
     default:
       return 'Unknown';
   }

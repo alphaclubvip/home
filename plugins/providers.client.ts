@@ -1,16 +1,15 @@
 import { ethers } from 'ethers';
-import detectEthereumProvider from '@metamask/detect-provider';
-// import ERC20_ABI from '../contracts/ERC20.json';
-// import ERC721_ABI from '../contracts/ERC721.json';
-import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
+import utilWeb3 from '@/utils/web3';
+// import ERC20_ABI from '@/contracts/ERC20.json';
+// import ERC721_ABI from '@/contracts/ERC721.json';
+// import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
 
 export default defineNuxtPlugin(async function (nuxtApp) {
-  const config = useRuntimeConfig();
+  // const config = useRuntimeConfig();
   nuxtApp.provide('ethers', ethers);
-  nuxtApp.provide('ETH', new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER));
-  nuxtApp.provide('BSC', new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER));
+  // nuxtApp.provide('ETH', new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER));
+  // nuxtApp.provide('BSC', new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER));
 
-  const web3Provider = useState<ethers.providers.Web3Provider>('web3.provider');
   const web3Account = useState<string>('web3.account', () => "");
   const web3Balance = useState<ethers.BigNumber>('web3.balance', () => ethers.BigNumber.from(0));
   const web3AccountENS = useState<string>('web3.account.ens', () => "");
@@ -56,47 +55,54 @@ export default defineNuxtPlugin(async function (nuxtApp) {
   nuxtApp.provide('connectWallet', async function () {
     console.log('Connectting Wallet...');
 
-    // provider
-    const _provider = await detectEthereumProvider();
-    if (_provider) {
-      const provider = new ethers.providers.Web3Provider(_provider);
-      web3Provider.value = provider;
-      await provider.send("eth_requestAccounts", []).then(async (_accounts) => {
-        nuxtApp.provide('provider', provider);
+    const _provider = await utilWeb3.web3Modal.connect();
+    if (!_provider) {
+      console.error('no web3 provider');
+      return;
+    }
 
-        // account
-        web3Account.value = ethers.utils.getAddress(_accounts[0]);
+    const provider = new ethers.providers.Web3Provider(_provider);
+    await provider.send("eth_requestAccounts", []).then(async (_accounts) => {
+      // account
+      web3Account.value = ethers.utils.getAddress(_accounts[0]);
 
-        // sync chain ID
-        await provider.send("eth_chainId", []).then((_chainId: string) => {
-          web3ChainId.value = parseInt(_chainId);
-        }).catch(async function (e: Error) {
-          console.error('>>> Plugin[providers] connectWallet ~ eth_chainId:', e)
-        });
+      // sync chain ID
+      await provider.send("eth_chainId", []).then((_chainId: string) => {
+        web3ChainId.value = parseInt(_chainId);
+      }).catch(async function (e: Error) {
+        console.error('>>> Plugin[providers] connectWallet ~ eth_chainId:', e)
+      });
 
-        // on: accountsChanged
-        _provider.on('accountsChanged', async (_accountsChanged: string[]) => {
-          web3Account.value = ethers.utils.getAddress(_accountsChanged[0]);
-          await updateAccountBalance(provider);
-          await resolveENS(provider);
-        });
+      // on: accountsChanged
+      _provider.on('accountsChanged', async (_accountsChanged: string[]) => {
+        web3Account.value = ethers.utils.getAddress(_accountsChanged[0]);
+        await updateAccountBalance(provider);
+        await resolveENS(provider);
+      });
 
-        // on: chainChanged
-        _provider.on('chainChanged', async (_chainId: string) => {
-          web3ChainId.value = parseInt(_chainId);
-          // ENS & Balance
-          await updateAccountBalance(provider);
-          await resolveENS(provider);
-        });
-
+      // on: chainChanged
+      _provider.on('chainChanged', async (_chainId: string) => {
+        web3ChainId.value = parseInt(_chainId);
         // ENS & Balance
         await updateAccountBalance(provider);
         await resolveENS(provider);
-      }).catch(async function (e: Error) {
-        console.error('>>> Plugin[providers] connectWallet ~ get accounts:', e);
       });
-    } else {
-      console.error('no web3 provider');
-    }
+
+      // // on: connect
+      // _provider.on("connect", (info: { chainId: number }) => {
+      //   console.log(info);
+      // });
+
+      // // on: disconnect
+      // _provider.on("disconnect", (error: { code: number; message: string }) => {
+      //   console.log(error);
+      // });
+
+      // ENS & Balance
+      await updateAccountBalance(provider);
+      await resolveENS(provider);
+    }).catch(async function (e: Error) {
+      console.error('>>> Plugin[providers] connectWallet ~ get accounts:', e);
+    });
   });
 });
