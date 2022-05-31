@@ -129,9 +129,14 @@
 				"internalType": "address",
 				"name": "_token",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_account",
+				"type": "address"
 			}
 		],
-		"name": "readERC20Metadata",
+		"name": "readERC20",
 		"outputs": [
 			{
 				"internalType": "string",
@@ -147,6 +152,11 @@
 				"internalType": "uint8",
 				"name": "decimals",
 				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "balance",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

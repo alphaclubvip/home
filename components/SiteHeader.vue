@@ -16,6 +16,10 @@ const navigations = [
     to: "/gas",
   },
   {
+    name: "Bulk",
+    to: "/bulk",
+  },
+  {
     name: "Test",
     to: "/test",
   },

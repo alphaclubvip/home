@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     ETH_RPOVIDER: process.env.ETH_RPOVIDER || 'https://eth.alphaclub.vip',
     BSC_RPOVIDER: process.env.BSC_RPOVIDER || 'https://bsc-dataseed.binance.org/',
 
-    ALPHA_CLUB_001: process.env.ALPHA_CLUB_001 || '0x7F6ca8aA3828615a9A96f1E8FbEBDF931C157924',
+    ALPHA_CLUB_001: process.env.ALPHA_CLUB_001 || '0x080e2fD72E297a21b761c385579CadA93a27d0b4',
   },
 
   css: [

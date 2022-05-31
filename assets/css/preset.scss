@@ -61,6 +61,30 @@
     }
   }
 
+  &.pink {
+    @apply text-white bg-pink-600;
+
+    &:hover {
+      @apply text-pink-50 bg-pink-700;
+    }
+
+    &:focus {
+      @apply ring-pink-500;
+    }
+  }
+
+  &.orange {
+    @apply text-orange-100 bg-orange-700;
+
+    &:hover {
+      @apply text-orange-50 bg-orange-600;
+    }
+
+    &:focus {
+      @apply ring-orange-500;
+    }
+  }
+
   &.violet {
     @apply text-violet-100 bg-violet-700;
 

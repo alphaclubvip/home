@@ -14,22 +14,23 @@ const nativeDecimals = useNativeDecimals();
 const contractBulk = ref<ethers.Contract>();
 const contractERC20 = ref<ethers.Contract>();
 
-watch(account, async () => {
-  await touchContractBulk();
-});
+
 
 
 
 const xx = async () => {
   console.log("xx");
 
-  const overrides = {
-    // from: account.value,
-    value: txValue.value
-  }
+  const overrides = { value: txValue.value }
 
   if (isERC20.value) {
-
+    if (isSameAmount.value) {
+      const tx = await contractBulk.value.bulkTransferERC20Same(ERC20Address.value, txRecipients.value, bnAmount.value, overrides);
+      console.log(tx);
+    } else {
+      const tx = await contractBulk.value.bulkTransferERC20(ERC20Address.value, txRecipients.value, txAmounts.value, overrides);
+      console.log(tx);
+    }
   } else {
     if (isSameAmount.value) {
       const tx = await contractBulk.value.bulkTransferSame(txRecipients.value, bnAmount.value, overrides);
@@ -44,11 +45,34 @@ const xx = async () => {
 }
 
 
+// mounted
+onMounted(async function () {
+  console.log("/contracts/bulk");
+  await touchContractBulk();
+});
 
 
+// init bulk contract
+async function touchContractBulk() {
+  if (account.value) {
+    const _signer = await utilWeb3.getSigner();
+    contractBulk.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
+  }
+}
 
+// watch: account
+watch(account, async () => {
+  await touchContractBulk();
+});
 
+// symbol
+const symbol = computed(() => {
+  if (isERC20.value) {
+    return ERC20Symbol.value;
+  }
 
+  return nativeSymbol.value;
+});
 
 
 
@@ -58,6 +82,27 @@ const xx = async () => {
 
 // select: type
 const type = ref<string>("A");
+watch(type, () => {
+  if (isSameAmount.value) {
+    if (txRecipients.value) {
+      list.value = txRecipients.value.join('\n');
+      return;
+    }
+  } else {
+    if (txRecipients.value && bnAmounts.value) {
+      let arr = [];
+      for (let i: number = 0; i < txRecipients.value.length; i++) {
+        if (bnAmounts.value.length > i) {
+          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], ERC20Decimals.value)}`);
+        } else {
+          arr.push(`${txRecipients.value[i]}, `);
+        }
+      }
+      list.value = arr.join('\n');
+      return;
+    }
+  }
+});
 const typeDesc = computed(() => {
   switch (type.value) {
     case "A":
@@ -77,28 +122,53 @@ const typeDesc = computed(() => {
       break;
   }
 });
-const isSameAmount = computed(() => {
-  return type.value === "B" || type.value === "D";
-});
 const isERC20 = computed(() => {
   return type.value === "C" || type.value === "D";
 });
-
-// input: amount
-const amountSame = ref<string>("");
-const symbol = computed(() => {
-  if (isERC20.value) {
-    return ERC20Symbol.value;
-  }
-
-  return nativeSymbol.value;
+const isSameAmount = computed(() => {
+  return type.value === "B" || type.value === "D";
 });
 
-// input: donate
-const amountDonate = ref<string>("0.005");
+// _amount
+const inputAmount = ref<string>("");
+watch(inputAmount, () => {
+  bnAmounts.value = [];
+  inputAmount.value = formatAmount(inputAmount.value, ERC20Decimals.value);
+  touchSameAmounts();
+});
+const bnAmount = computed(() => {
+  if (inputAmount.value) {
+    return ethers.utils.parseUnits(inputAmount.value, ERC20Decimals.value);
+  }
+
+  return ethers.BigNumber.from(0);
+});
+const txAmount = computed(() => {
+  return bnAmount.value.toString();
+});
+
+
+
 
 // textarea: list
 const list = ref<string>("");
+watch(list, () => {
+  listError.value = '';
+
+  let arrAddress = [];
+  let arrAmount = [];
+
+  txRecipients.value = arrAddress;
+  bnAmounts.value = arrAmount;
+
+  touchAddresses();
+
+  if (isSameAmount.value) {
+    touchSameAmounts();
+  } else {
+    touchAmounts();
+  }
+});
 const listError = ref<string>("");
 const listLable = computed(() => {
   if (isERC20.value) {
@@ -106,10 +176,10 @@ const listLable = computed(() => {
       return isSameAmount.value ? `${ERC20Symbol.value} Recipients` : `Recipients and ${ERC20Symbol.value} amounts`;
     }
 
-    return 'Recipients...';
-  } else {
-    return isSameAmount.value ? `${nativeSymbol.value} Recipients` : `Recipients and ${nativeSymbol.value} values`;
+    return isSameAmount.value ? `Recipients` : `Recipients and amounts`;
   }
+
+  return isSameAmount.value ? `${nativeSymbol.value} Recipients` : `Recipients and ${nativeSymbol.value} values`;
 });
 const placeholderListDiff = [
   '0x0000000000000000000000000000000000000001, 0.1',
@@ -141,15 +211,9 @@ const lines = computed(() => {
 
 
 // _token
-// 0xce0E62C41EB744859Ce9869809A1f2ddea315d68 APE
-// 0xce0e62c41eb744859ce9869809a1f2ddea315d68
+// 0xce0e62c41eb744859ce9869809a1f2ddea315d68 APE
 const inputToken = ref<string>("");
 const inputTokenError = ref<string>("");
-const ERC20Address = ref<string>("");
-const ERC20Name = ref<string>("");
-const ERC20Symbol = ref<string>("");
-const ERC20Decimals = ref<number>(0);
-
 watch(inputToken, async () => {
   clearERC20();
 
@@ -168,27 +232,44 @@ watch(inputToken, async () => {
   }
 });
 
+// ERC20
+const ERC20Address = ref<string>("");
+const ERC20Name = ref<string>("");
+const ERC20Symbol = ref<string>("");
+const ERC20Decimals = ref<number>(0);
+const ERC20Balance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
+const ERC20Allowance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
+const ERC20Approved = computed(() => {
+  return ERC20Allowance.value.gte(bnAmountSum.value);
+});
 async function touchERC20() {
   try {
-    const data = await contractBulk.value.readERC20Metadata(ERC20Address.value);
+    const data = await contractBulk.value.readERC20(ERC20Address.value, account.value);
     ERC20Name.value = data.name;
     ERC20Symbol.value = data.symbol;
     ERC20Decimals.value = data.decimals;
+    ERC20Balance.value = data.balance;
   } catch (e) {
     clearERC20();
-    inputTokenError.value = `Not a ERC20 Token Address`;
+    inputTokenError.value = `Not a ERC20 Token Contract Address`;
     return;
   }
-}
 
+  if (ERC20Symbol.value) {
+    const _signer = await utilWeb3.getSigner();
+    const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
+    ERC20Allowance.value = await ERC20Contract.allowance(account.value, config.ALPHA_CLUB_001);
+  }
+}
 function clearERC20() {
   inputTokenError.value = "";
   ERC20Address.value = "";
   ERC20Name.value = "";
   ERC20Symbol.value = "";
   ERC20Decimals.value = 0;
+  ERC20Balance.value = ethers.BigNumber.from(0);
+  ERC20Allowance.value = ethers.BigNumber.from(0);
 }
-
 
 // _recipients
 const txRecipients = ref<string[]>([]);
@@ -203,19 +284,7 @@ const txAmounts = computed(() => {
 
   return rlt;
 });
-
-// _amount
-const bnAmount = computed(() => {
-  if (amountSame.value) {
-    return ethers.utils.parseUnits(amountSame.value, ERC20Decimals.value);
-  }
-
-  return ethers.BigNumber.from(0);
-});
-const txAmount = computed(() => {
-  return bnAmount.value.toString();
-});
-const bnAmountAccu = computed(() => {
+const bnAmountSum = computed(() => {
   if (bnAmounts.value.length) {
     let rlt = ethers.BigNumber.from(0);
 
@@ -229,13 +298,17 @@ const bnAmountAccu = computed(() => {
   return ethers.BigNumber.from(0);
 });
 
-// donate
+// input: donate
+const inputDonate = ref<string>("0.005");
 const bnDonate = computed(() => {
-  if (amountDonate.value) {
-    return ethers.utils.parseUnits(amountDonate.value, nativeDecimals.value);
+  if (inputDonate.value) {
+    return ethers.utils.parseUnits(inputDonate.value, nativeDecimals.value);
   }
 
   return ethers.BigNumber.from(0);
+});
+watch(inputDonate, () => {
+  inputDonate.value = formatAmount(inputDonate.value, nativeDecimals.value);
 });
 
 // tx: value
@@ -243,7 +316,7 @@ const bnValue = computed(() => {
   if (isERC20.value) {
     return bnDonate.value;
   } else {
-    return bnAmountAccu.value.add(bnDonate.value);
+    return bnAmountSum.value.add(bnDonate.value);
   }
 });
 const txValue = computed(() => {
@@ -252,6 +325,9 @@ const txValue = computed(() => {
 
 // preview
 const showPreview = ref(false);
+function togglePreview() {
+  showPreview.value = !showPreview.value;
+}
 const previewRows = computed(() => {
   let rlt = [];
   for (let i: number = 0; i < Math.min(txRecipients.value.length, bnAmounts.value.length); i++) {
@@ -262,9 +338,6 @@ const previewRows = computed(() => {
   }
   return rlt;
 });
-function togglePreview() {
-  showPreview.value = !showPreview.value;
-}
 
 
 
@@ -319,7 +392,6 @@ function touchAddresses() {
   txRecipients.value = arrAddress;
 }
 
-
 // list => amounts
 function touchAmounts() {
   let arrAmount = [];
@@ -352,13 +424,14 @@ function touchAmounts() {
   bnAmounts.value = arrAmount;
 }
 
+// same amout => amounts
 function touchSameAmounts() {
   let arrAmount = [];
 
   bnAmounts.value = arrAmount;
 
-  if (amountSame.value) {
-    const _amount = ethers.utils.parseUnits(amountSame.value, ERC20Decimals.value);
+  if (inputAmount.value) {
+    const _amount = ethers.utils.parseUnits(inputAmount.value, ERC20Decimals.value);
     txRecipients.value.forEach((_address: string, _i: number) => {
       arrAmount.push(_amount);
     });
@@ -367,66 +440,28 @@ function touchSameAmounts() {
   }
 }
 
-watch(amountDonate, () => {
-  amountDonate.value = formatAmount(amountDonate.value, nativeDecimals.value);
-});
 
-watch(amountSame, () => {
-  bnAmounts.value = [];
-  amountSame.value = formatAmount(amountSame.value, ERC20Decimals.value);
-  touchSameAmounts();
-});
 
-watch(type, () => {
-  if (isSameAmount.value) {
-    if (txRecipients.value) {
-      list.value = txRecipients.value.join('\n');
-      return;
+
+const showApprove = computed(() => {
+  if (isERC20.value) {
+    if (ERC20Approved.value) {
+      return false;
     }
-  } else {
-    if (txRecipients.value && bnAmounts.value) {
-      let arr = [];
-      for (let i: number = 0; i < txRecipients.value.length; i++) {
-        if (bnAmounts.value.length > i) {
-          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], ERC20Decimals.value)}`);
-        } else {
-          arr.push(`${txRecipients.value[i]}, `);
-        }
-      }
-      list.value = arr.join('\n');
-      return;
-    }
+
+    return true;
   }
+
+  return false;
 });
 
-watch(list, () => {
-  listError.value = '';
 
-  let arrAddress = [];
-  let arrAmount = [];
-
-  txRecipients.value = arrAddress;
-  bnAmounts.value = arrAmount;
-
-  touchAddresses();
-
-  if (isSameAmount.value) {
-    touchSameAmounts();
-  } else {
-    touchAmounts();
+const transferDisabled = computed(() => {
+  if (isERC20.value) {
+    return !ERC20Approved.value;
   }
-});
 
-async function touchContractBulk() {
-  if (account.value) {
-    const _signer = await utilWeb3.getSigner();
-    contractBulk.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
-  }
-}
-
-onMounted(async function () {
-  console.log("/contracts/bulk");
-  await touchContractBulk();
+  return false;
 });
 </script>
 
@@ -469,16 +504,17 @@ onMounted(async function () {
             <div class="mt-1 relative">
               <input type="text" name="amount" id="amount"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="amountSame" />
+                v-model="inputAmount" />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <span class="text-gray-400 sm:text-sm">
                   {{ symbol }}
                 </span>
               </div>
             </div>
+
           </div>
 
-          <div v-if="isERC20" class="md:col-span-6">
+          <div v-if="isERC20" class="md:col-span-5 lg:col-span-4">
             <label for="token-address" class="block font-medium text-gray-700">
               Token Contract Address
             </label>
@@ -488,10 +524,11 @@ onMounted(async function () {
                 v-model="inputToken" />
             </div>
             <p v-if="inputTokenError" class="mt-2 text-sm font-semibold text-rose-500">
-              inputTokenError
+              {{ inputTokenError }}
             </p>
             <p v-if="ERC20Name" class="mt-2 text-sm text-gray-500">
-              {{ ERC20Name }} {{ ERC20Symbol }} {{ ERC20Decimals }}
+              Balance:
+              <FormattedBN :bn-value="ERC20Balance" :decimals="ERC20Decimals" /> {{ ERC20Symbol }} ({{ ERC20Name }})
             </p>
           </div>
 
@@ -509,6 +546,57 @@ onMounted(async function () {
             </p>
           </div>
 
+          <div v-if="0 < previewRows.length" class="md:col-span-6 flex flex-col">
+            <div class="flex flex-col gap-6 sm:flex sm:flex-row sm:justify-between">
+              <div class="sm:flex-auto">
+                <h1 class="text-xl font-semibold text-gray-900">
+                  Total
+                  <FormattedBN :bn-value="bnAmountSum" :decimals="ERC20Decimals" />
+                  {{ symbol }}
+                </h1>
+                <p class="mt-2 text-sm text-gray-700">
+                  {{ previewRows.length }} transfers.
+                </p>
+              </div>
+
+              <div>
+                <button class="jt-btn gray gap-2" @click="togglePreview">
+                  <span> Details </span>
+                  <ChevronDownIcon v-if="!showPreview" class="block h-5 w-5" />
+                  <ChevronUpIcon v-else class="block h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div v-if="showPreview" class="mt-8 flex flex-col">
+              <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300 tx-table font-mono">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th scope="col">Index</th>
+                          <th scope="col">Address</th>
+                          <th scope="col">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 bg-white">
+                        <tr v-for="(row, index) in previewRows" :key="index">
+                          <td>{{ index + 1 }}</td>
+                          <td>{{ row.address }}</td>
+                          <td>
+                            <FormattedBN :bn-value="row.amount" :decimals="ERC20Decimals" />
+                            {{ symbol }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
 
           <div class="md:col-span-3 lg:col-span-2">
             <label for="donate" class="block font-medium text-gray-700">
@@ -517,7 +605,7 @@ onMounted(async function () {
             <div class="mt-1 relative">
               <input type="text" name="donate" id="donate"
                 class="shadow-sm focus:ring-green-500 focus:border-indigo-500 block w-full bg-green-50 pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="amountDonate" />
+                v-model="inputDonate" />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <span class="text-gray-400 sm:text-sm">
                   {{ nativeSymbol }}
@@ -527,6 +615,11 @@ onMounted(async function () {
             <p class="mt-2 text-sm font-semibold text-green-600">
               Donate to help us build more useful tools.
             </p>
+          </div>
+
+          <div class="md:col-span-6 flex gap-4">
+            <button v-if="showApprove" type="button" class="jt-btn pink" @click="xx">Approve {{ ERC20Symbol }}</button>
+            <button type="button" class="jt-btn indigo" @click="xx" :disabled="transferDisabled">Bulk Transfer</button>
           </div>
         </div>
 
@@ -546,61 +639,10 @@ onMounted(async function () {
         <div>ERC20Name: {{ ERC20Name }}</div>
         <div>ERC20Symbol: {{ ERC20Symbol }}</div>
         <div>ERC20Decimals: {{ ERC20Decimals }}</div>
-
-        <div v-if="0 < previewRows.length" class="mt-8 flex flex-col">
-          <div class="flex flex-col gap-6 sm:flex sm:flex-row sm:justify-between">
-            <div class="sm:flex-auto">
-              <h1 class="text-xl font-semibold text-gray-900">
-                Total
-                <FormattedBN :bn-value="bnAmountAccu" :decimals="ERC20Decimals" />
-                {{ symbol }}
-              </h1>
-              <p class="mt-2 text-sm text-gray-700">
-                {{ previewRows.length }} transfers.
-              </p>
-            </div>
-
-            <div>
-              <button class="jt-btn gray gap-2" @click="togglePreview">
-                <span> Details </span>
-                <ChevronDownIcon v-if="!showPreview" class="block h-5 w-5" />
-                <ChevronUpIcon v-else class="block h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          <div v-if="showPreview" class="mt-8 flex flex-col">
-            <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                  <table class="min-w-full divide-y divide-gray-300 tx-table font-mono">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th scope="col">Index</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 bg-white">
-                      <tr v-for="(row, index) in previewRows" :key="index">
-                        <td>{{ index + 1 }}</td>
-                        <td>{{ row.address }}</td>
-                        <td>
-                          <FormattedBN :bn-value="row.amount" :decimals="ERC20Decimals" />
-                          {{ symbol }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <button type="button" class="jt-btn gray" @click="xx">xx</button>
-        </div>
+        <div>ERC20Balance: {{ ERC20Balance }}</div>
+        <div>ERC20Allowance: {{ ERC20Allowance }}</div>
+        <div>ERC20Approved: {{ ERC20Approved }}</div>
+        <div>showApprove: {{ showApprove }}</div>
       </LAutoWidth>
     </Connected>
   </div>
