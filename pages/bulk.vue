@@ -618,31 +618,10 @@ const transferDisabled = computed(() => {
           </div>
 
           <div class="md:col-span-6 flex gap-4">
-            <button v-if="showApprove" type="button" class="jt-btn pink" @click="xx">Approve {{ ERC20Symbol }}</button>
-            <button type="button" class="jt-btn indigo" @click="xx" :disabled="transferDisabled">Bulk Transfer</button>
+            <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="xx">Approve {{ ERC20Symbol }}</button>
+            <button type="button" class="flex-1 w-full jt-btn indigo" @click="xx" :disabled="transferDisabled">Bulk Transfer</button>
           </div>
         </div>
-
-        <div class="mt-6">
-          txAmount: {{ bnAmount }}
-        </div>
-        <div>
-          txValue: {{ bnValue }}
-        </div>
-        <div>
-          txDonate: {{ bnDonate }}
-        </div>
-        <div>
-          ALPHA_CLUB_001: {{ config.ALPHA_CLUB_001 }}
-        </div>
-        <div>ERC20Address: {{ ERC20Address }}</div>
-        <div>ERC20Name: {{ ERC20Name }}</div>
-        <div>ERC20Symbol: {{ ERC20Symbol }}</div>
-        <div>ERC20Decimals: {{ ERC20Decimals }}</div>
-        <div>ERC20Balance: {{ ERC20Balance }}</div>
-        <div>ERC20Allowance: {{ ERC20Allowance }}</div>
-        <div>ERC20Approved: {{ ERC20Approved }}</div>
-        <div>showApprove: {{ showApprove }}</div>
       </LAutoWidth>
     </Connected>
   </div>

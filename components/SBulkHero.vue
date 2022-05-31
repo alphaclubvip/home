@@ -8,7 +8,7 @@
         <span class="block text-indigo-600">and save gas</span>
       </h1>
       <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-        Open-sourced and FREE.
+        Open-sourced and FREE. (Building...)
       </p>
     </div>
   </div>
