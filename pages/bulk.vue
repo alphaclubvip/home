@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ethers } from 'ethers';
+import { TransactionResponse, TransactionReceipt } from '@/utils/ethers';
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
 import ERC20_ABI from '@/contracts/ERC20.json';
 import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
@@ -17,14 +18,31 @@ const contract = ref<ethers.Contract>();
 // const txApprovalReceipt = ref<ethers.Transaction.>();
 
 
+const tx = ref<TransactionResponse>();
+const txType = ref<string>("");
+
+
 const approveERC20 = async () => {
   console.log("approveERC20");
 
   const _signer = await utilWeb3.getSigner();
   const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
-  const tx = await ERC20Contract.approve(config.ALPHA_CLUB_001, ethers.BigNumber.from(2).pow(256).sub(1));
+  await ERC20Contract.approve(config.ALPHA_CLUB_001, ethers.constants.MaxUint256)
+    .then(async (tx: TransactionResponse) => {
+      console.log(tx);
+
+      await tx.wait()
+        .then((_receipt: TransactionReceipt) => {
+          console.log(_receipt);
+        })
+        .catch((e: Error) => {
+          console.error("approve tx.wait:", e);
+        });
+    })
+    .catch((e: Error) => {
+      console.error("approve:", e);
+    });
   // TODO: update ERC20Allowance
-  console.log(tx);
 }
 
 
@@ -64,9 +82,17 @@ const xx = async () => {
 // mounted
 onMounted(async function () {
   console.log("/contracts/bulk");
+
+  console.log(ethers.errors.CALL_EXCEPTION);
+  console.log(ethers.errors.TRANSACTION_REPLACED);
+
   await touchContractBulk();
 });
 
+// watch: account
+watch(account, async () => {
+  await touchContractBulk();
+});
 
 // init bulk contract
 async function touchContractBulk() {
@@ -76,18 +102,9 @@ async function touchContractBulk() {
   }
 }
 
-// watch: account
-watch(account, async () => {
-  await touchContractBulk();
-});
-
 // symbol
 const symbol = computed(() => {
-  if (isERC20.value) {
-    return ERC20Symbol.value;
-  }
-
-  return nativeSymbol.value;
+  return isERC20.value ? ERC20Symbol.value : nativeSymbol.value;
 });
 
 
@@ -448,7 +465,6 @@ function touchAmounts() {
       listError.value = `Line #${lineNumber} - Empty amount`;
       return;
     }
-
   });
 
   bnAmounts.value = arrAmount;
@@ -655,7 +671,7 @@ const transferDisabled = computed(() => {
             <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
               Approve {{ ERC20Symbol }}
             </button>
-            <button type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
+            <button v-if="ERC20Symbol" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
               Approve {{ ERC20Symbol }}
             </button>
             <button type="button" class="flex-1 w-full jt-btn indigo" @click="xx" :disabled="transferDisabled">
