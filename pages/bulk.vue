@@ -14,64 +14,101 @@ const nativeDecimals = useNativeDecimals();
 
 const contract = ref<ethers.Contract>();
 
-// const txApproval = ref<ethers.Transaction>();
-// const txApprovalReceipt = ref<ethers.Transaction.>();
-
-
 const tx = ref<TransactionResponse>();
-const txType = ref<string>("");
+const txReceipt = ref<TransactionReceipt>();
+const txReplaced = ref<string>("");
+const txName = ref<string>("");
 
+watch(tx, async () => {
+  console.log("tx:", tx.value);
+
+  if (tx.value && 0 === tx.value.confirmations) {
+    await tx.value.wait()
+      .then((_receipt: TransactionReceipt) => {
+        console.log("_receipt:", _receipt);
+
+        txReceipt.value = _receipt;
+      })
+      .catch((_e: Error) => {
+        if (_e.hasOwnProperty('reason')) {
+          console.log("_e['reason']:", _e['reason']);
+          txReplaced.value = _e['reason'];
+
+          if (_e.hasOwnProperty('replacement')) {
+            console.log("_e['replacement']:", _e['replacement'])
+            tx.value = _e['replacement'];
+          }
+
+          if (_e.hasOwnProperty('receipt')) {
+            console.log("_e['receipt']:", _e['receipt']);
+            txReceipt.value = _e['receipt'];
+          }
+        }
+
+        console.error("approve tx.wait:", _e);
+      });
+  }
+});
+
+const deleteTx = () => {
+  let _tx: TransactionResponse;
+  let _txReceipt: TransactionReceipt;
+  tx.value = _tx;
+  txReceipt.value = _txReceipt;
+  txReplaced.value = "";
+  txName.value = "";
+}
 
 const approveERC20 = async () => {
   console.log("approveERC20");
 
   const _signer = await utilWeb3.getSigner();
   const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
-  await ERC20Contract.approve(config.ALPHA_CLUB_001, ethers.constants.MaxUint256)
-    .then(async (tx: TransactionResponse) => {
-      console.log(tx);
 
-      await tx.wait()
-        .then((_receipt: TransactionReceipt) => {
-          console.log(_receipt);
-        })
-        .catch((e: Error) => {
-          console.error("approve tx.wait:", e);
-        });
-    })
+  deleteTx();
+  txName.value = "Approve";
+  tx.value = await ERC20Contract.approve(config.ALPHA_CLUB_001, ethers.constants.MaxUint256)
     .catch((e: Error) => {
-      console.error("approve:", e);
+      deleteTx();
     });
   // TODO: update ERC20Allowance
 }
 
-
-const xx = async () => {
+const bulkTransfer = async () => {
   console.log("xx");
 
   const overrides = { value: txValue.value }
 
   if (isERC20.value) {
     if (isSameAmount.value) {
-      const tx = await contract.value.bulkTransferERC20Same(ERC20Address.value, txRecipients.value, bnAmount.value, overrides);
-      console.log(tx);
+      deleteTx();
+      txName.value = "Bulk Transfer";
+      tx.value = await contract.value.bulkTransferERC20Same(ERC20Address.value, txRecipients.value, bnAmount.value, overrides)
+        .catch((e: Error) => {
+          deleteTx();
+        });
     } else {
-      const tx = await contract.value.bulkTransferERC20(ERC20Address.value, txRecipients.value, txAmounts.value, overrides);
-      console.log(tx);
+      deleteTx();
+      txName.value = "Bulk Transfer";
+      tx.value = await contract.value.bulkTransferERC20(ERC20Address.value, txRecipients.value, txAmounts.value, overrides)
+        .catch((e: Error) => {
+          deleteTx();
+        });
     }
   } else if (isSameAmount.value) {
-    const tx = await contract.value.bulkTransferSame(txRecipients.value, bnAmount.value, overrides);
-    console.log(tx);
-
-    await tx.wait().then(_receipt => {
-      console.log(_receipt);
-    }).catch(e => {
-      console.error(e);
-    });
-
+    deleteTx();
+    txName.value = "Bulk Transfer";
+    tx.value = await contract.value.bulkTransferSame(txRecipients.value, bnAmount.value, overrides)
+      .catch((e: Error) => {
+        deleteTx();
+      });
   } else {
-    const tx = await contract.value.bulkTransfer(txRecipients.value, txAmounts.value, overrides);
-    console.log(tx);
+    deleteTx();
+    txName.value = "Bulk Transfer";
+    tx.value = await contract.value.bulkTransfer(txRecipients.value, txAmounts.value, overrides)
+      .catch((e: Error) => {
+        deleteTx();
+      });
   }
 
   // 0xce0e62c41eb744859ce9869809a1f2ddea315d68 APE
@@ -166,7 +203,7 @@ const txAmount = computed(() => {
 const inputToken = ref<string>("");
 const inputTokenError = ref<string>("");
 watch(inputToken, async () => {
-  clearERC20();
+  deleteERC20();
 
   const s = inputToken.value.trim();
   if (s) {
@@ -203,12 +240,12 @@ async function touchERC20() {
     ERC20Balance.value = data.balance;
     ERC20Allowance.value = data.allowance;
   } catch (e) {
-    clearERC20();
+    deleteERC20();
     inputTokenError.value = `Not a ERC20 Token Contract Address`;
     return;
   }
 }
-function clearERC20() {
+function deleteERC20() {
   inputTokenError.value = "";
   ERC20Address.value = "";
   ERC20Name.value = "";
@@ -674,18 +711,13 @@ const transferDisabled = computed(() => {
             <button v-if="ERC20Symbol" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
               Approve {{ ERC20Symbol }}
             </button>
-            <button type="button" class="flex-1 w-full jt-btn indigo" @click="xx" :disabled="transferDisabled">
+            <button type="button" class="flex-1 w-full jt-btn indigo" @click="bulkTransfer"
+              :disabled="transferDisabled">
               Bulk Transfer
             </button>
           </div>
         </div>
-        <div class="mt-8">
-          ERC20Allowance:
-          <FormattedBN :bn-value="ERC20Allowance" :decimals="ERC20Decimals" />
-        </div>
-        <div>
-          bnAmount: {{ bnAmount }}
-        </div>
+        <STx class="mt-4" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
       </LAutoWidth>
     </Connected>
   </div>

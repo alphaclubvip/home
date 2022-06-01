@@ -32,6 +32,18 @@ export const useNativeSymbol = () => computed(() => {
   }
 });
 
+export const useNativeCurrency = () => computed(() => {
+  const chainId = useWeb3ChainId();
+
+  switch (chainId.value) {
+    case 1:
+    case 4:
+      return 'Ξ';
+    default:
+      return '';
+  }
+});
+
 export const useNativeDecimals = () => computed(() => {
   return 18;
 });

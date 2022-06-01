@@ -2,6 +2,10 @@
 import { ethers } from "ethers";
 
 const props = defineProps({
+  prefix: {
+    type: String,
+    default: '',
+  },
   bnValue: {
     type: ethers.BigNumber,
     default: ethers.BigNumber.from(0),
@@ -89,6 +93,7 @@ const disValue = computed(() => {
 
 <template>
   <span>
+    <span v-if="prefix">{{ prefix }}</span>
     <span>{{ disValue.i }}</span>
     <span v-if="disValue.f.length">.</span>
     <span class="formated-bn" v-for="(part, index) in disValue.f" :key="index">
