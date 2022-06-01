@@ -693,7 +693,7 @@ const transferDisabled = computed(() => {
             </div>
           </div>
 
-          <STx class="col-span-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
+          <STx class="md:col-span-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
 
           <div class="md:col-span-6 flex gap-4">
             <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
