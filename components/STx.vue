@@ -26,11 +26,8 @@ const txFailed = computed(() => {
     :class="{ 'animate-pulse items-center ': !tx, 'border-rose-500 bg-rose-50': true === txFailed, 'border-green-500 bg-green-50': false === txFailed, 'border-indigo-500 bg-indigo-50': undefined == txFailed }">
     <div class="grow-0">
       <ClockIcon v-if="!txReceipt" class="block text-gray-300" :class="[tx ? 'animate-pulse h-16 w-16' : 'h-8 w-8']" />
-      <template v-else>
-        <XCircleIcon v-if="!txReceipt.status || 'cancelled' === props.txReplaced"
-          class="block h-16 w-16 text-rose-700" />
-        <CheckCircleIcon v-else class="block h-16 w-16 text-green-700" />
-      </template>
+      <XCircleIcon v-else-if="true == txFailed" class="block h-16 w-16 text-rose-700" />
+      <CheckCircleIcon v-else class="block h-16 w-16 text-green-700" />
     </div>
     <div class="break-words">
       <div class="font-semibold text-xl"

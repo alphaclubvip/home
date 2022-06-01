@@ -8,48 +8,37 @@ import utilWeb3 from '@/utils/web3';
 
 const config = useRuntimeConfig();
 const account = useWeb3Account();
-const balance = useWeb3Balance();
+// const balance = useWeb3Balance();
 const nativeSymbol = useNativeSymbol();
 const nativeDecimals = useNativeDecimals();
-
 const contract = ref<ethers.Contract>();
 
+// section: tx
 const tx = ref<TransactionResponse>();
-const txReceipt = ref<TransactionReceipt>();
-const txReplaced = ref<string>("");
-const txName = ref<string>("");
-
 watch(tx, async () => {
-  console.log("tx:", tx.value);
-
   if (tx.value && 0 === tx.value.confirmations) {
     await tx.value.wait()
       .then((_receipt: TransactionReceipt) => {
-        console.log("_receipt:", _receipt);
-
         txReceipt.value = _receipt;
       })
       .catch((_e: Error) => {
         if (_e.hasOwnProperty('reason')) {
-          console.log("_e['reason']:", _e['reason']);
           txReplaced.value = _e['reason'];
 
           if (_e.hasOwnProperty('replacement')) {
-            console.log("_e['replacement']:", _e['replacement'])
             tx.value = _e['replacement'];
           }
 
           if (_e.hasOwnProperty('receipt')) {
-            console.log("_e['receipt']:", _e['receipt']);
             txReceipt.value = _e['receipt'];
           }
         }
-
-        console.error("approve tx.wait:", _e);
       });
   }
 });
-
+const txReceipt = ref<TransactionReceipt>();
+const txReplaced = ref<string>("");
+const txName = ref<string>("");
 const deleteTx = () => {
   let _tx: TransactionResponse;
   let _txReceipt: TransactionReceipt;
@@ -59,6 +48,8 @@ const deleteTx = () => {
   txName.value = "";
 }
 
+
+// approve: ERC20
 const approveERC20 = async () => {
   console.log("approveERC20");
 
@@ -74,8 +65,9 @@ const approveERC20 = async () => {
   // TODO: update ERC20Allowance
 }
 
+// bulk transfer
 const bulkTransfer = async () => {
-  console.log("xx");
+  console.log("bulkTransfer");
 
   const overrides = { value: txValue.value }
 
@@ -119,10 +111,8 @@ const bulkTransfer = async () => {
 // mounted
 onMounted(async function () {
   console.log("/contracts/bulk");
-
-  console.log(ethers.errors.CALL_EXCEPTION);
-  console.log(ethers.errors.TRANSACTION_REPLACED);
-
+  // console.log(ethers.errors.CALL_EXCEPTION);
+  // console.log(ethers.errors.TRANSACTION_REPLACED);
   await touchContractBulk();
 });
 
@@ -420,8 +410,6 @@ const previewRows = computed(() => {
 
 
 const formatAmount = function (s: String, decimals: number) {
-  console.log("s:", s, "decimals:", decimals);
-
   return s
     .replace("。", ".")
     .replace(/[^\d.]/g, "")
@@ -604,9 +592,9 @@ const transferDisabled = computed(() => {
               Token Contract Address
             </label>
             <div class="mt-1">
-              <input type="text" name="token-address" id="token-address"
+              <input type="text" name="token-address" id="token-address" autocomplete="off"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="inputToken" />
+                :class="{ 'bg-green-50 border-green-500': ERC20Symbol }" v-model="inputToken" />
             </div>
             <p v-if="inputTokenError" class="mt-2 text-sm font-semibold text-rose-500">
               {{ inputTokenError }}
@@ -628,6 +616,28 @@ const transferDisabled = computed(() => {
             </div>
             <p v-if="listError" class="mt-2 text-sm font-semibold text-rose-500">
               {{ listError }}
+            </p>
+          </div>
+
+
+
+
+          <div class="md:col-span-3 lg:col-span-2">
+            <label for="donate" class="block font-medium text-gray-700">
+              Dontate
+            </label>
+            <div class="mt-1 relative">
+              <input type="text" name="donate" id="donate"
+                class="shadow-sm focus:ring-green-500 focus:border-indigo-500 block w-full bg-green-50 pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+                v-model="inputDonate" />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-400 sm:text-sm">
+                  {{ nativeSymbol }}
+                </span>
+              </div>
+            </div>
+            <p class="mt-2 text-sm font-semibold text-green-600">
+              Donate to help us build more useful tools.
             </p>
           </div>
 
@@ -684,25 +694,7 @@ const transferDisabled = computed(() => {
             </div>
           </div>
 
-
-          <div class="md:col-span-3 lg:col-span-2">
-            <label for="donate" class="block font-medium text-gray-700">
-              Dontate
-            </label>
-            <div class="mt-1 relative">
-              <input type="text" name="donate" id="donate"
-                class="shadow-sm focus:ring-green-500 focus:border-indigo-500 block w-full bg-green-50 pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="inputDonate" />
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span class="text-gray-400 sm:text-sm">
-                  {{ nativeSymbol }}
-                </span>
-              </div>
-            </div>
-            <p class="mt-2 text-sm font-semibold text-green-600">
-              Donate to help us build more useful tools.
-            </p>
-          </div>
+          <STx class="col-span-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
 
           <div class="md:col-span-6 flex gap-4">
             <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
@@ -717,7 +709,6 @@ const transferDisabled = computed(() => {
             </button>
           </div>
         </div>
-        <STx class="mt-4" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
       </LAutoWidth>
     </Connected>
   </div>
