@@ -34,6 +34,8 @@ watch(tx, async () => {
           }
         }
       });
+
+    await touchERC20();
   }
 });
 const txReceipt = ref<TransactionReceipt>();
@@ -47,7 +49,6 @@ const deleteTx = () => {
   txReplaced.value = "";
   txName.value = "";
 }
-
 
 // approve: ERC20
 const approveERC20 = async () => {
@@ -119,6 +120,7 @@ onMounted(async function () {
 // watch: account
 watch(account, async () => {
   await touchContractBulk();
+  await touchERC20();
 });
 
 // init bulk contract
@@ -204,10 +206,7 @@ watch(inputToken, async () => {
       return;
     }
 
-    if (ERC20Address.value) {
-      await touchERC20();
-      touchList();
-    }
+    await touchERC20();
   }
 });
 
@@ -222,17 +221,20 @@ const ERC20Approved = computed(() => {
   return ERC20Allowance.value.gte(bnAmountSum.value);
 });
 async function touchERC20() {
-  try {
-    const data = await contract.value.readERC20(ERC20Address.value, account.value);
-    ERC20Name.value = data.name;
-    ERC20Symbol.value = data.symbol;
-    ERC20Decimals.value = data.decimals;
-    ERC20Balance.value = data.balance;
-    ERC20Allowance.value = data.allowance;
-  } catch (e) {
-    deleteERC20();
-    inputTokenError.value = `Not a ERC20 Token Contract Address`;
-    return;
+  if (ERC20Address.value) {
+    try {
+      const data = await contract.value.readERC20(ERC20Address.value, account.value);
+      ERC20Name.value = data.name;
+      ERC20Symbol.value = data.symbol;
+      ERC20Decimals.value = data.decimals;
+      ERC20Balance.value = data.balance;
+      ERC20Allowance.value = data.allowance;
+      touchList();
+    } catch (e) {
+      deleteERC20();
+      inputTokenError.value = `Not a ERC20 Token Contract Address`;
+      return;
+    }
   }
 }
 function deleteERC20() {
@@ -594,7 +596,7 @@ const transferDisabled = computed(() => {
             <div class="mt-1">
               <input type="text" name="token-address" id="token-address" autocomplete="off"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full font-mono sm:text-sm border-gray-300 rounded-md"
-                :class="{ 'bg-green-50 border-green-500': ERC20Symbol }" v-model="inputToken" />
+                v-model="inputToken" />
             </div>
             <p v-if="inputTokenError" class="mt-2 text-sm font-semibold text-rose-500">
               {{ inputTokenError }}
@@ -618,9 +620,6 @@ const transferDisabled = computed(() => {
               {{ listError }}
             </p>
           </div>
-
-
-
 
           <div class="md:col-span-3 lg:col-span-2">
             <label for="donate" class="block font-medium text-gray-700">
@@ -698,9 +697,6 @@ const transferDisabled = computed(() => {
 
           <div class="md:col-span-6 flex gap-4">
             <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
-              Approve {{ ERC20Symbol }}
-            </button>
-            <button v-if="ERC20Symbol" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
               Approve {{ ERC20Symbol }}
             </button>
             <button type="button" class="flex-1 w-full jt-btn indigo" @click="bulkTransfer"
