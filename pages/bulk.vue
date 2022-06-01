@@ -11,11 +11,21 @@ const balance = useWeb3Balance();
 const nativeSymbol = useNativeSymbol();
 const nativeDecimals = useNativeDecimals();
 
-const contractBulk = ref<ethers.Contract>();
-const contractERC20 = ref<ethers.Contract>();
+const contract = ref<ethers.Contract>();
+
+// const txApproval = ref<ethers.Transaction>();
+// const txApprovalReceipt = ref<ethers.Transaction.>();
 
 
+const approveERC20 = async () => {
+  console.log("approveERC20");
 
+  const _signer = await utilWeb3.getSigner();
+  const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
+  const tx = await ERC20Contract.approve(config.ALPHA_CLUB_001, ethers.BigNumber.from(2).pow(256).sub(1));
+  // TODO: update ERC20Allowance
+  console.log(tx);
+}
 
 
 const xx = async () => {
@@ -25,22 +35,28 @@ const xx = async () => {
 
   if (isERC20.value) {
     if (isSameAmount.value) {
-      const tx = await contractBulk.value.bulkTransferERC20Same(ERC20Address.value, txRecipients.value, bnAmount.value, overrides);
+      const tx = await contract.value.bulkTransferERC20Same(ERC20Address.value, txRecipients.value, bnAmount.value, overrides);
       console.log(tx);
     } else {
-      const tx = await contractBulk.value.bulkTransferERC20(ERC20Address.value, txRecipients.value, txAmounts.value, overrides);
+      const tx = await contract.value.bulkTransferERC20(ERC20Address.value, txRecipients.value, txAmounts.value, overrides);
       console.log(tx);
     }
+  } else if (isSameAmount.value) {
+    const tx = await contract.value.bulkTransferSame(txRecipients.value, bnAmount.value, overrides);
+    console.log(tx);
+
+    await tx.wait().then(_receipt => {
+      console.log(_receipt);
+    }).catch(e => {
+      console.error(e);
+    });
+
   } else {
-    if (isSameAmount.value) {
-      const tx = await contractBulk.value.bulkTransferSame(txRecipients.value, bnAmount.value, overrides);
-      console.log(tx);
-    } else {
-      const tx = await contractBulk.value.bulkTransfer(txRecipients.value, txAmounts.value, overrides);
-      console.log(tx);
-    }
+    const tx = await contract.value.bulkTransfer(txRecipients.value, txAmounts.value, overrides);
+    console.log(tx);
   }
 
+  // 0xce0e62c41eb744859ce9869809a1f2ddea315d68 APE
   // ["0x0000002d55c53Ed508AB99f88e0473c0D4e002f7", "0x000000d2537D519b693f8ca4c8a3fB8A36EE8990"], 1
 }
 
@@ -56,7 +72,7 @@ onMounted(async function () {
 async function touchContractBulk() {
   if (account.value) {
     const _signer = await utilWeb3.getSigner();
-    contractBulk.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
+    contract.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
   }
 }
 
@@ -83,25 +99,7 @@ const symbol = computed(() => {
 // select: type
 const type = ref<string>("A");
 watch(type, () => {
-  if (isSameAmount.value) {
-    if (txRecipients.value) {
-      list.value = txRecipients.value.join('\n');
-      return;
-    }
-  } else {
-    if (txRecipients.value && bnAmounts.value) {
-      let arr = [];
-      for (let i: number = 0; i < txRecipients.value.length; i++) {
-        if (bnAmounts.value.length > i) {
-          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], ERC20Decimals.value)}`);
-        } else {
-          arr.push(`${txRecipients.value[i]}, `);
-        }
-      }
-      list.value = arr.join('\n');
-      return;
-    }
-  }
+  touchList();
 });
 const typeDesc = computed(() => {
   switch (type.value) {
@@ -133,12 +131,12 @@ const isSameAmount = computed(() => {
 const inputAmount = ref<string>("");
 watch(inputAmount, () => {
   bnAmounts.value = [];
-  inputAmount.value = formatAmount(inputAmount.value, ERC20Decimals.value);
-  touchSameAmounts();
+  inputAmount.value = formatAmount(inputAmount.value, isERC20.value ? ERC20Decimals.value : nativeDecimals.value);
+  touchList();
 });
 const bnAmount = computed(() => {
   if (inputAmount.value) {
-    return ethers.utils.parseUnits(inputAmount.value, ERC20Decimals.value);
+    return ethers.utils.parseUnits(inputAmount.value, isERC20.value ? ERC20Decimals.value : nativeDecimals.value);
   }
 
   return ethers.BigNumber.from(0);
@@ -147,7 +145,61 @@ const txAmount = computed(() => {
   return bnAmount.value.toString();
 });
 
+// _token
+const inputToken = ref<string>("");
+const inputTokenError = ref<string>("");
+watch(inputToken, async () => {
+  clearERC20();
 
+  const s = inputToken.value.trim();
+  if (s) {
+    try {
+      ERC20Address.value = ethers.utils.getAddress(s);
+    } catch (e) {
+      inputTokenError.value = `Invalid address: "${s}"`;
+      return;
+    }
+
+    if (ERC20Address.value) {
+      await touchERC20();
+      touchList();
+    }
+  }
+});
+
+// ERC20
+const ERC20Address = ref<string>("");
+const ERC20Name = ref<string>("");
+const ERC20Symbol = ref<string>("");
+const ERC20Decimals = ref<number>(0);
+const ERC20Balance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
+const ERC20Allowance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
+const ERC20Approved = computed(() => {
+  return ERC20Allowance.value.gte(bnAmountSum.value);
+});
+async function touchERC20() {
+  try {
+    const data = await contract.value.readERC20(ERC20Address.value, account.value);
+    ERC20Name.value = data.name;
+    ERC20Symbol.value = data.symbol;
+    ERC20Decimals.value = data.decimals;
+    ERC20Balance.value = data.balance;
+    ERC20Allowance.value = data.allowance;
+  } catch (e) {
+    clearERC20();
+    inputTokenError.value = `Not a ERC20 Token Contract Address`;
+    return;
+  }
+}
+function clearERC20() {
+  inputTokenError.value = "";
+  ERC20Address.value = "";
+  ERC20Name.value = "";
+  ERC20Symbol.value = "";
+  ERC20Decimals.value = 0;
+  ERC20Balance.value = ethers.BigNumber.from(0);
+  ERC20Allowance.value = ethers.BigNumber.from(0);
+}
 
 
 // textarea: list
@@ -169,6 +221,29 @@ watch(list, () => {
     touchAmounts();
   }
 });
+function touchList() {
+  if (isSameAmount.value) {
+    if (txRecipients.value) {
+      list.value = txRecipients.value.join('\n');
+      return;
+    }
+  } else if (txRecipients.value && bnAmounts.value) {
+    let arr = [];
+    for (let i: number = 0; i < txRecipients.value.length; i++) {
+      if (bnAmounts.value.length > i) {
+        if (isERC20.value && ERC20Symbol.value) {
+          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], isERC20.value ? ERC20Decimals.value : nativeDecimals.value)}`);
+        } else {
+          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], nativeDecimals.value)}`);
+        }
+      } else {
+        arr.push(`${txRecipients.value[i]}, `);
+      }
+    }
+    list.value = arr.join('\n');
+    return;
+  }
+}
 const listError = ref<string>("");
 const listLable = computed(() => {
   if (isERC20.value) {
@@ -208,68 +283,6 @@ const lines = computed(() => {
   });
   return rlt;
 });
-
-
-// _token
-// 0xce0e62c41eb744859ce9869809a1f2ddea315d68 APE
-const inputToken = ref<string>("");
-const inputTokenError = ref<string>("");
-watch(inputToken, async () => {
-  clearERC20();
-
-  const s = inputToken.value.trim();
-  if (s) {
-    try {
-      ERC20Address.value = ethers.utils.getAddress(s);
-    } catch (e) {
-      inputTokenError.value = `Invalid address: "${s}"`;
-      return;
-    }
-
-    if (ERC20Address.value) {
-      await touchERC20();
-    }
-  }
-});
-
-// ERC20
-const ERC20Address = ref<string>("");
-const ERC20Name = ref<string>("");
-const ERC20Symbol = ref<string>("");
-const ERC20Decimals = ref<number>(0);
-const ERC20Balance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
-const ERC20Allowance = ref<ethers.BigNumber>(ethers.BigNumber.from(0));
-const ERC20Approved = computed(() => {
-  return ERC20Allowance.value.gte(bnAmountSum.value);
-});
-async function touchERC20() {
-  try {
-    const data = await contractBulk.value.readERC20(ERC20Address.value, account.value);
-    ERC20Name.value = data.name;
-    ERC20Symbol.value = data.symbol;
-    ERC20Decimals.value = data.decimals;
-    ERC20Balance.value = data.balance;
-  } catch (e) {
-    clearERC20();
-    inputTokenError.value = `Not a ERC20 Token Contract Address`;
-    return;
-  }
-
-  if (ERC20Symbol.value) {
-    const _signer = await utilWeb3.getSigner();
-    const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
-    ERC20Allowance.value = await ERC20Contract.allowance(account.value, config.ALPHA_CLUB_001);
-  }
-}
-function clearERC20() {
-  inputTokenError.value = "";
-  ERC20Address.value = "";
-  ERC20Name.value = "";
-  ERC20Symbol.value = "";
-  ERC20Decimals.value = 0;
-  ERC20Balance.value = ethers.BigNumber.from(0);
-  ERC20Allowance.value = ethers.BigNumber.from(0);
-}
 
 // _recipients
 const txRecipients = ref<string[]>([]);
@@ -324,6 +337,15 @@ const txValue = computed(() => {
 });
 
 // preview
+const previewReady = computed(() => {
+  if (isERC20.value) {
+    if (!ERC20Symbol.value) {
+      return false;
+    }
+  }
+
+  return 0 < previewRows.value.length;
+});
 const showPreview = ref(false);
 function togglePreview() {
   showPreview.value = !showPreview.value;
@@ -344,6 +366,8 @@ const previewRows = computed(() => {
 
 
 const formatAmount = function (s: String, decimals: number) {
+  console.log("s:", s, "decimals:", decimals);
+
   return s
     .replace("。", ".")
     .replace(/[^\d.]/g, "")
@@ -401,24 +425,30 @@ function touchAmounts() {
     const lineNumber = _i + 1;
 
     const arrLine = _line.split(',');
+    if (isERC20.value && !ERC20Symbol.value) {
+      listError.value = `Please input Token Contract Address first.`;
+      return;
+    }
+
     if (arrLine.length > 1) {
-      const p1 = arrLine[1].trim();
+      const _pos1 = arrLine[1].trim();
       try {
-        const amount = ethers.BigNumber.from(ethers.utils.parseUnits(p1, ERC20Decimals.value));
-        if (amount.gt(0)) {
-          arrAmount.push(amount);
+        const _amount = ethers.BigNumber.from(ethers.utils.parseUnits(_pos1, isERC20.value ? ERC20Decimals.value : nativeDecimals.value));
+        if (_amount.gt(0)) {
+          arrAmount.push(_amount);
         } else {
-          listError.value = `Line #${lineNumber} - Invalid amount: "${p1}"`;
+          listError.value = `Line #${lineNumber} - Invalid amount: "${_pos1}"`;
           return;
         }
       } catch (e) {
-        listError.value = `Line #${lineNumber} - Invalid amount: "${p1}"`;
+        listError.value = `Line #${lineNumber} - Invalid amount: "${_pos1}"`;
         return;
       }
     } else {
       listError.value = `Line #${lineNumber} - Empty amount`;
       return;
     }
+
   });
 
   bnAmounts.value = arrAmount;
@@ -427,13 +457,11 @@ function touchAmounts() {
 // same amout => amounts
 function touchSameAmounts() {
   let arrAmount = [];
-
   bnAmounts.value = arrAmount;
 
   if (inputAmount.value) {
-    const _amount = ethers.utils.parseUnits(inputAmount.value, ERC20Decimals.value);
     txRecipients.value.forEach((_address: string, _i: number) => {
-      arrAmount.push(_amount);
+      arrAmount.push(bnAmount.value);
     });
 
     bnAmounts.value = arrAmount;
@@ -458,7 +486,11 @@ const showApprove = computed(() => {
 
 const transferDisabled = computed(() => {
   if (isERC20.value) {
-    return !ERC20Approved.value;
+    if (ERC20Balance.value.gte(bnAmountSum.value) && ERC20Approved.value) {
+      return false;
+    }
+
+    return true;
   }
 
   return false;
@@ -546,12 +578,13 @@ const transferDisabled = computed(() => {
             </p>
           </div>
 
-          <div v-if="0 < previewRows.length" class="md:col-span-6 flex flex-col">
+          <div v-if="previewReady" class="md:col-span-6 flex flex-col">
             <div class="flex flex-col gap-6 sm:flex sm:flex-row sm:justify-between">
               <div class="sm:flex-auto">
                 <h1 class="text-xl font-semibold text-gray-900">
                   Total
-                  <FormattedBN :bn-value="bnAmountSum" :decimals="ERC20Decimals" />
+                  <FormattedBN v-if="isERC20" :bn-value="bnAmountSum" :decimals="ERC20Decimals" />
+                  <FormattedBN v-else :bn-value="bnAmountSum" :decimals="nativeDecimals" />
                   {{ symbol }}
                 </h1>
                 <p class="mt-2 text-sm text-gray-700">
@@ -585,7 +618,8 @@ const transferDisabled = computed(() => {
                           <td>{{ index + 1 }}</td>
                           <td>{{ row.address }}</td>
                           <td>
-                            <FormattedBN :bn-value="row.amount" :decimals="ERC20Decimals" />
+                            <FormattedBN v-if="isERC20" :bn-value="row.amount" :decimals="ERC20Decimals" />
+                            <FormattedBN v-else :bn-value="row.amount" :decimals="nativeDecimals" />
                             {{ symbol }}
                           </td>
                         </tr>
@@ -618,9 +652,23 @@ const transferDisabled = computed(() => {
           </div>
 
           <div class="md:col-span-6 flex gap-4">
-            <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="xx">Approve {{ ERC20Symbol }}</button>
-            <button type="button" class="flex-1 w-full jt-btn indigo" @click="xx" :disabled="transferDisabled">Bulk Transfer</button>
+            <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
+              Approve {{ ERC20Symbol }}
+            </button>
+            <button type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
+              Approve {{ ERC20Symbol }}
+            </button>
+            <button type="button" class="flex-1 w-full jt-btn indigo" @click="xx" :disabled="transferDisabled">
+              Bulk Transfer
+            </button>
           </div>
+        </div>
+        <div class="mt-8">
+          ERC20Allowance:
+          <FormattedBN :bn-value="ERC20Allowance" :decimals="ERC20Decimals" />
+        </div>
+        <div>
+          bnAmount: {{ bnAmount }}
         </div>
       </LAutoWidth>
     </Connected>
