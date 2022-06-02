@@ -669,12 +669,11 @@ const transferDisabled = computed(() => {
                 </span>
               </div>
             </div>
-
           </div>
 
           <div v-if="isERC20" class="md:col-span-5 lg:col-span-4">
             <label for="token-address" class="block font-medium text-gray-700">
-              Token Contract Address
+              ERC20 Token Contract Address
             </label>
             <div class="mt-1">
               <input type="text" name="token-address" id="token-address" autocomplete="off"
@@ -684,9 +683,11 @@ const transferDisabled = computed(() => {
             <p v-if="inputERC20Error" class="mt-2 text-sm font-semibold text-rose-500">
               {{ inputERC20Error }}
             </p>
-            <p v-if="ERC20Name" class="mt-2 text-sm text-gray-500">
-              Balance:
-              <FormattedBN :bn-value="ERC20Balance" :decimals="ERC20Decimals" /> {{ ERC20Symbol }} ({{ ERC20Name }})
+            <p v-if="ERC20Name" class="mt-2 flex gap-1 text-sm text-gray-500">
+              <span>Balance:</span>
+              <FormattedBN :bn-value="ERC20Balance" :decimals="ERC20Decimals" />
+              <span class="font-semibold">{{ ERC20Symbol }}</span>
+              <span>({{ ERC20Name }})</span>
             </p>
           </div>
 
