@@ -42,10 +42,8 @@ const txReceipt = ref<TransactionReceipt>();
 const txReplaced = ref<string>("");
 const txName = ref<string>("");
 const deleteTx = () => {
-  let _tx: TransactionResponse;
-  let _txReceipt: TransactionReceipt;
-  tx.value = _tx;
-  txReceipt.value = _txReceipt;
+  tx.value = undefined;
+  txReceipt.value = undefined;
   txReplaced.value = "";
   txName.value = "";
 }
@@ -114,20 +112,22 @@ onMounted(async function () {
   console.log("/contracts/bulk");
   // console.log(ethers.errors.CALL_EXCEPTION);
   // console.log(ethers.errors.TRANSACTION_REPLACED);
-  await touchContractBulk();
+  await touchContract();
 });
 
 // watch: account
 watch(account, async () => {
-  await touchContractBulk();
+  await touchContract();
   await touchERC20();
 });
 
 // init bulk contract
-async function touchContractBulk() {
+async function touchContract() {
   if (account.value) {
-    const _signer = await utilWeb3.getSigner();
-    contract.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
+    if (isNative.value || isERC20.value) {
+      const _signer = await utilWeb3.getSigner();
+      contract.value = new ethers.Contract(config.ALPHA_CLUB_001, ALPHA_CLUB_001_ABI, _signer);
+    }
   }
 }
 
@@ -136,16 +136,47 @@ const symbol = computed(() => {
   return isERC20.value ? ERC20Symbol.value : nativeSymbol.value;
 });
 
-
-
-
-
-
-
 // select: type
-const type = ref<string>("A");
+const typeOptions = [
+  {
+    value: "A",
+    title: "Type A - Bulk Transfer ETH",
+  },
+  {
+    value: "B",
+    title: "Type B - Bulk Transfer ETH (Same Value)",
+  },
+  {
+    value: "C",
+    title: "Type C - Bulk Transfer ERC20",
+  },
+  {
+    value: "D",
+    title: "Type D - Bulk Transfer ERC20 (Same Value)",
+  },
+  // {
+  //   value: "",
+  //   title: "",
+  // },
+  // {
+  //   value: "",
+  //   title: "",
+  // },
+  // {
+  //   value: "",
+  //   title: "",
+  // },
+  // {
+  //   value: "",
+  //   title: "",
+  // },
+];
+const type = ref<string>(typeOptions[0].value);
 watch(type, () => {
+  console.log("type: start");
   touchList();
+  touchContract();
+  console.log("type: finished");
 });
 const typeDesc = computed(() => {
   switch (type.value) {
@@ -166,23 +197,77 @@ const typeDesc = computed(() => {
       break;
   }
 });
+const isNative = computed(() => {
+  return type.value === "A" || type.value === "B";
+});
 const isERC20 = computed(() => {
   return type.value === "C" || type.value === "D";
+});
+const isERC721 = computed(() => {
+  return type.value === "E" || type.value === "F";
+});
+const isERC1155 = computed(() => {
+  return type.value === "G" || type.value === "H";
 });
 const isSameAmount = computed(() => {
   return type.value === "B" || type.value === "D";
 });
 
+
+const txDecimals = computed(() => {
+  if (isNative.value) {
+    return nativeDecimals.value;
+  }
+
+  if (isERC20.value) {
+    return ERC20Decimals.value;
+  }
+
+  if (isERC721.value || isERC1155.value) {
+    return 0;
+  }
+
+  return undefined;
+});
+
+
+function convertBN2String(bn: ethers.BigNumber) {
+  if (ERC20Symbol.value) {
+    // ERC20
+    return ethers.utils.formatUnits(bn, txDecimals.value);
+
+    // TODO: ERC721, ERC1155
+  } else {
+    // Native
+    return ethers.utils.formatUnits(bn, nativeDecimals.value);
+  }
+}
+
+function convertString2BN(s: string) {
+  if (ERC20Symbol.value) {
+    // ERC20
+    return ethers.utils.parseUnits(s, txDecimals.value);
+
+    // TODO: ERC721, ERC1155
+  } else {
+    // Native
+    return ethers.utils.parseUnits(s, nativeDecimals.value);
+  }
+}
+
+
 // _amount
 const inputAmount = ref<string>("");
 watch(inputAmount, () => {
   bnAmounts.value = [];
-  inputAmount.value = formatAmount(inputAmount.value, isERC20.value ? ERC20Decimals.value : nativeDecimals.value);
+  if (inputAmount.value) {
+    inputAmount.value = formatAmount(inputAmount.value, txDecimals.value);
+  }
   touchList();
 });
 const bnAmount = computed(() => {
   if (inputAmount.value) {
-    return ethers.utils.parseUnits(inputAmount.value, isERC20.value ? ERC20Decimals.value : nativeDecimals.value);
+    return convertString2BN(inputAmount.value);
   }
 
   return ethers.BigNumber.from(0);
@@ -192,17 +277,17 @@ const txAmount = computed(() => {
 });
 
 // _token
-const inputToken = ref<string>("");
-const inputTokenError = ref<string>("");
-watch(inputToken, async () => {
+const inputERC20 = ref<string>("");
+const inputERC20Error = ref<string>("");
+watch(inputERC20, async () => {
   deleteERC20();
 
-  const s = inputToken.value.trim();
+  const s = inputERC20.value.trim();
   if (s) {
     try {
       ERC20Address.value = ethers.utils.getAddress(s);
     } catch (e) {
-      inputTokenError.value = `Invalid address: "${s}"`;
+      inputERC20Error.value = `Invalid address: "${s}"`;
       return;
     }
 
@@ -232,13 +317,13 @@ async function touchERC20() {
       touchList();
     } catch (e) {
       deleteERC20();
-      inputTokenError.value = `Not a ERC20 Token Contract Address`;
+      inputERC20Error.value = `Not a ERC20 Token Contract Address`;
       return;
     }
   }
 }
 function deleteERC20() {
-  inputTokenError.value = "";
+  inputERC20Error.value = "";
   ERC20Address.value = "";
   ERC20Name.value = "";
   ERC20Symbol.value = "";
@@ -259,35 +344,42 @@ watch(list, () => {
   txRecipients.value = arrAddress;
   bnAmounts.value = arrAmount;
 
-  touchAddresses();
+  makeAddresses();
 
   if (isSameAmount.value) {
     touchSameAmounts();
   } else {
-    touchAmounts();
+    makeAmounts();
   }
 });
 function touchList() {
   if (isSameAmount.value) {
+    // same amount
+
     if (txRecipients.value) {
       list.value = txRecipients.value.join('\n');
-      return;
     }
+
+    if (0 < bnAmounts.value.length) {
+      inputAmount.value = convertBN2String(bnAmounts.value[0]);
+    }
+
   } else if (txRecipients.value && bnAmounts.value) {
+    // diff amount
+
     let arr = [];
     for (let i: number = 0; i < txRecipients.value.length; i++) {
       if (bnAmounts.value.length > i) {
-        if (isERC20.value && ERC20Symbol.value) {
-          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], isERC20.value ? ERC20Decimals.value : nativeDecimals.value)}`);
-        } else {
-          arr.push(`${txRecipients.value[i]}, ${ethers.utils.formatUnits(bnAmounts.value[i], nativeDecimals.value)}`);
-        }
+        arr.push(`${txRecipients.value[i]}, ${convertBN2String(bnAmounts.value[i])}`);
+      } else if (bnAmount.value.gt(0)) {
+        arr.push(`${txRecipients.value[i]}, ${convertBN2String(bnAmount.value)}`);
       } else {
+        // only recipients
         arr.push(`${txRecipients.value[i]}, `);
       }
     }
+
     list.value = arr.join('\n');
-    return;
   }
 }
 const listError = ref<string>("");
@@ -424,7 +516,7 @@ const formatAmount = function (s: String, decimals: number) {
 
 
 // list => address(es)
-function touchAddresses() {
+function makeAddresses() {
   let arrAddress = [];
   txRecipients.value = arrAddress;
 
@@ -461,9 +553,9 @@ function touchAddresses() {
 }
 
 // list => amounts
-function touchAmounts() {
-  let arrAmount = [];
-  bnAmounts.value = arrAmount;
+function makeAmounts() {
+  let arrAmounts = [];
+  bnAmounts.value = arrAmounts;
 
   lines.value.forEach((_line: string, _i: number) => {
     const lineNumber = _i + 1;
@@ -477,9 +569,9 @@ function touchAmounts() {
     if (arrLine.length > 1) {
       const _pos1 = arrLine[1].trim();
       try {
-        const _amount = ethers.BigNumber.from(ethers.utils.parseUnits(_pos1, isERC20.value ? ERC20Decimals.value : nativeDecimals.value));
+        const _amount = ethers.BigNumber.from(ethers.utils.parseUnits(_pos1, txDecimals.value));
         if (_amount.gt(0)) {
-          arrAmount.push(_amount);
+          arrAmounts.push(_amount);
         } else {
           listError.value = `Line #${lineNumber} - Invalid amount: "${_pos1}"`;
           return;
@@ -494,7 +586,7 @@ function touchAmounts() {
     }
   });
 
-  bnAmounts.value = arrAmount;
+  bnAmounts.value = arrAmounts;
 }
 
 // same amout => amounts
@@ -553,17 +645,8 @@ const transferDisabled = computed(() => {
             <div class="mt-1">
               <select id="type" name="type" v-model="type"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md font-mono">
-                <option value="A">
-                  Type A - Bulk Transfer ETH
-                </option>
-                <option value="B">
-                  Type B - Bulk Transfer ETH (Same Value)
-                </option>
-                <option value="C">
-                  Type C - Bulk Transfer ERC20
-                </option>
-                <option value="D">
-                  Type D - Bulk Transfer ERC20 (Same Value)
+                <option v-for="option in typeOptions" :value="option.value" :key="option.value">
+                  {{ option.title }}
                 </option>
               </select>
             </div>
@@ -577,7 +660,7 @@ const transferDisabled = computed(() => {
               Amount
             </label>
             <div class="mt-1 relative">
-              <input type="text" name="amount" id="amount"
+              <input type="text" name="amount" id="amount" autocomplete="off"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
                 v-model="inputAmount" />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -596,10 +679,10 @@ const transferDisabled = computed(() => {
             <div class="mt-1">
               <input type="text" name="token-address" id="token-address" autocomplete="off"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="inputToken" />
+                v-model="inputERC20" />
             </div>
-            <p v-if="inputTokenError" class="mt-2 text-sm font-semibold text-rose-500">
-              {{ inputTokenError }}
+            <p v-if="inputERC20Error" class="mt-2 text-sm font-semibold text-rose-500">
+              {{ inputERC20Error }}
             </p>
             <p v-if="ERC20Name" class="mt-2 text-sm text-gray-500">
               Balance:
