@@ -753,14 +753,14 @@ const transferDisabled = computed(() => {
                     <table class="min-w-full divide-y divide-gray-300 tx-table font-mono">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th scope="col">Index</th>
+                          <th scope="col" class="hidden md:block">Index</th>
                           <th scope="col">Address</th>
                           <th scope="col">Amount</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-100 bg-white">
                         <tr v-for="(row, index) in previewRows" :key="index">
-                          <td>{{ index + 1 }}</td>
+                          <td class="hidden md:block">{{ index + 1 }}</td>
                           <td>{{ row.address }}</td>
                           <td>
                             <FormattedBN v-if="isERC20" :bn-value="row.amount" :decimals="ERC20Decimals" />
@@ -776,7 +776,8 @@ const transferDisabled = computed(() => {
             </div>
           </div>
 
-          <STx class="md:col-span-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName" :tx-replaced="txReplaced" />
+          <STx class="md:col-span-6 mt-4 lg:mt-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName"
+            :tx-replaced="txReplaced" />
 
           <div class="md:col-span-6 flex gap-4">
             <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink" @click="approveERC20">
