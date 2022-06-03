@@ -7,6 +7,9 @@ const accountENS = useWeb3AccountENS();
 const accountAvatar = web3AccountAvatar();
 const chainId = useWeb3ChainId();
 
+const nativeSymbol = useNativeSymbol();
+const nativeDecimals = useNativeDecimals();
+
 onMounted(async function () {
   console.log("/test");
 });
@@ -17,7 +20,7 @@ onMounted(async function () {
     <LAutoWidth class="py-8">
       <div>TEST PAGE</div>
       <div>
-        <FormattedBN :bn-value="balance" :decimals="18" /> ETH
+        <FormattedBN :bn-value="balance" :decimals="nativeDecimals" /> {{ nativeSymbol }}
       </div>
       <div>
         {{ chainId }}

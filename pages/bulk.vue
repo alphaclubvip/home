@@ -2,9 +2,9 @@
 import { ethers } from 'ethers';
 import { TransactionResponse, TransactionReceipt } from '@/utils/ethers';
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
+import utilWeb3 from '@/utils/web3';
 import ERC20_ABI from '@/contracts/ERC20.json';
 import ALPHA_CLUB_001_ABI from '@/contracts/AlphaClub001.json';
-import utilWeb3 from '@/utils/web3';
 
 const config = useRuntimeConfig();
 const account = useWeb3Account();
@@ -229,7 +229,6 @@ const txDecimals = computed(() => {
 
   return undefined;
 });
-
 
 function convertBN2String(bn: ethers.BigNumber) {
   if (ERC20Symbol.value) {

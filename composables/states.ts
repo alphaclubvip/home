@@ -25,8 +25,19 @@ export const useNativeSymbol = () => computed(() => {
   switch (chainId.value) {
     case 1:
       return 'ETH';
+    case 3:
     case 4:
-      return 'T-ETH';
+    case 5:
+    case 42:
+      return 'tETH';
+    case 56:
+      return 'BNB';
+    case 97:
+      return 'tBNB';
+    case 128:
+      return 'HT';
+    case 137:
+      return 'MATIC';
     default:
       return 'Unknown';
   }
@@ -37,7 +48,10 @@ export const useNativeCurrency = () => computed(() => {
 
   switch (chainId.value) {
     case 1:
+    case 3:
     case 4:
+    case 5:
+    case 42:
       return 'Ξ';
     default:
       return '';
