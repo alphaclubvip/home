@@ -1,22 +1,85 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
 
-const gasLimit = ref<String>();
+const nativeCurrency = useNativeCurrency();
+
+const gasLimit = ref<String>("21000");
 const masPriorityFee = ref<String>();
 const maxFee = ref<String>();
 const baseFee = ref<String>();
-const txType = ref("21000");
+const showFullTxTypes = ref<Boolean>(false);
+function toogleShowFullTxTypes() {
+  showFullTxTypes.value = !showFullTxTypes.value;
+}
 const txTypes = [
-  { text: "Transfer (Wallet => Wallet)", value: "21000" },
-  { text: "Transfer USDT", value: "46109" },
-  { text: "Transfer USDC", value: "48481" },
-  { text: "Transfer DAI", value: "34718" },
-  { text: "Uniswap v3", value: "129830" },
-  { text: "Uniswap v2", value: "105657" },
-  { text: "1inch", value: "104108" },
-  { text: "SushiSwap", value: "109253" },
-  { text: "0x", value: "114931" },
-  { text: "Other (Fill the Gas Limit)", value: "0" },
+  {
+    text: "Transfer (Wallet => Wallet)",
+    bn: ethers.BigNumber.from(21000),
+  },
+  {
+    text: "Transfer USDT",
+    bn: ethers.BigNumber.from(46109),
+  },
+  {
+    text: "Transfer USDC",
+    bn: ethers.BigNumber.from(48481),
+  },
+  {
+    text: "Transfer DAI",
+    bn: ethers.BigNumber.from(34718),
+  },
+  {
+    text: "OpenSea - Register Account",
+    bn: ethers.BigNumber.from(389335),
+  },
+  {
+    text: "Uniswap v3 - Swap",
+    bn: ethers.BigNumber.from(129830),
+  },
+  {
+    text: "Uniswap v3 - Add Liquidity",
+    bn: ethers.BigNumber.from(445784),
+  },
+  {
+    text: "Uniswap v3 - Remove Liquidity",
+    bn: ethers.BigNumber.from(221722),
+  },
+  {
+    text: "Uniswap v2 - Swap",
+    bn: ethers.BigNumber.from(105657),
+  },
+  {
+    text: "Uniswap v2 - Add Liquidity",
+    bn: ethers.BigNumber.from(131820),
+  },
+  {
+    text: "Uniswap v2 - Remove Liquidity",
+    bn: ethers.BigNumber.from(180244),
+  },
+  {
+    text: "1inch - Swap",
+    bn: ethers.BigNumber.from(104108),
+  },
+  {
+    text: "SushiSwap",
+    bn: ethers.BigNumber.from(109253),
+  },
+  {
+    text: "0x",
+    bn: ethers.BigNumber.from(114931),
+  },
+  {
+    text: "Curve - Swap",
+    bn: ethers.BigNumber.from(114651),
+  },
+  {
+    text: "Curve - Add Liquidity",
+    bn: ethers.BigNumber.from(182725),
+  },
+  {
+    text: "Curve - Remove Liquidity",
+    bn: ethers.BigNumber.from(162054),
+  },
 ];
 
 const bnGasLimit = computed(() => {
@@ -24,7 +87,7 @@ const bnGasLimit = computed(() => {
     return ethers.BigNumber.from(gasLimit.value);
   }
 
-  return ethers.BigNumber.from(txType.value);
+  return ethers.BigNumber.from(21000);
 });
 
 const bnMaxPriorityFee = computed(() => {
@@ -169,18 +232,8 @@ watch(baseFee, () => {
         Transaction Fee
       </dt>
       <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-        <div
-          class="
-            flex
-            items-baseline
-            gap-1
-            text-2xl
-            font-semibold
-            text-indigo-600
-          "
-        >
-          <span>Ξ</span>
-          <FormattedBN :bn-value="bnWei" :decimals="18" />
+        <div class="flex items-baseline gap-1 text-2xl font-semibold text-indigo-600">
+          <FormattedBN :bn-value="bnWei" :decimals="18" :prefix="nativeCurrency" />
         </div>
       </dd>
     </div>
@@ -190,202 +243,106 @@ watch(baseFee, () => {
         Max Transaction Fee
       </dt>
       <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-        <div
-          class="
-            flex
-            items-baseline
-            gap-1
-            text-2xl
-            font-semibold
-            text-indigo-600
-          "
-        >
-          <span>Ξ</span>
-          <FormattedBN :bn-value="bnMaxWei" :decimals="18" />
+        <div class="flex items-baseline gap-1 text-2xl font-semibold text-indigo-600">
+          <FormattedBN :bn-value="bnMaxWei" :decimals="18" :prefix="nativeCurrency" />
         </div>
       </dd>
     </div>
   </dl>
 
-  <div
-    class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6 lg:grid-cols-12"
-  >
-    <div class="md:col-span-3 lg:col-span-4">
-      <label for="tx-type" class="block text-sm font-medium text-gray-700">
-        Transaction Type
-      </label>
-      <div class="mt-1">
-        <select
-          id="tx-type"
-          name="tx-type"
-          class="
-            shadow-sm
-            focus:ring-indigo-500 focus:border-indigo-500
-            block
-            w-full
-            font-mono
-            sm:text-sm
-            border-gray-300
-            rounded-md
-          "
-          v-model="txType"
-        >
-          <option
-            v-for="option in txTypes"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.text }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <div class="md:col-span-3 lg:col-span-2">
+  <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6 lg:grid-cols-12">
+    <div class="md:col-span-3">
       <label for="gas-limit" class="block text-sm font-medium text-gray-700">
         Gas Limit
       </label>
       <div class="mt-1">
-        <input
-          type="text"
-          name="gas-limit"
-          id="gas-limit"
-          class="
-            shadow-sm
-            focus:ring-indigo-500 focus:border-indigo-500
-            block
-            w-full
-            sm:text-sm
-            border-gray-300
-            rounded-md
-          "
-          v-model="gasLimit"
-          :placeholder="txType"
-        />
+        <input type="text" name="gas-limit" id="gas-limit" autocomplete="off"
+          class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+          v-model="gasLimit" placeholder="21000" />
       </div>
     </div>
 
-    <div class="md:col-span-2 lg:col-span-2">
-      <label
-        for="max-priority-fee"
-        class="block text-sm font-medium text-gray-700"
-      >
+    <div class="md:col-span-3">
+      <label for="max-priority-fee" class="block text-sm font-medium text-gray-700">
         Max Priority Fee
       </label>
       <div class="mt-1 relative">
-        <input
-          type="text"
-          name="max-priority-fee"
-          id="max-priority-fee"
-          class="
-            shadow-sm
-            focus:ring-indigo-500 focus:border-indigo-500
-            block
-            w-full
-            pr-16
-            sm:text-sm
-            border-gray-300
-            rounded-md
-          "
-          v-model="masPriorityFee"
-          :placeholder="strBN(props.maxPriorityFeePerGas)"
-        />
-        <div
-          class="
-            absolute
-            inset-y-0
-            right-0
-            pr-3
-            flex
-            items-center
-            pointer-events-none
-          "
-        >
-          <span class="text-gray-400 sm:text-sm"> GWei </span>
+        <input type="text" name="max-priority-fee" id="max-priority-fee" autocomplete="off"
+          class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+          v-model="masPriorityFee" :placeholder="strBN(props.maxPriorityFeePerGas)" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <span class="font-mono text-gray-400 sm:text-sm"> GWei </span>
         </div>
       </div>
     </div>
 
-    <div class="md:col-span-2 lg:col-span-2">
+    <div class="md:col-span-3">
       <label for="max-fee" class="block text-sm font-medium text-gray-700">
         Max Fee
       </label>
       <div class="mt-1 relative">
-        <input
-          type="text"
-          name="max-fee"
-          id="max-fee"
-          class="
-            shadow-sm
-            focus:ring-indigo-500 focus:border-indigo-500
-            block
-            w-full
-            pr-16
-            sm:text-sm
-            border-gray-300
-            rounded-md
-          "
-          v-model="maxFee"
-          :placeholder="strBN(props.maxFeePerGas)"
-        />
-        <div
-          class="
-            absolute
-            inset-y-0
-            right-0
-            pr-3
-            flex
-            items-center
-            pointer-events-none
-          "
-        >
-          <span class="text-gray-400 sm:text-sm"> GWei </span>
+        <input type="text" name="max-fee" id="max-fee" autocomplete="off"
+          class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+          v-model="maxFee" :placeholder="strBN(props.maxFeePerGas)" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <span class="font-mono text-gray-400 sm:text-sm"> GWei </span>
         </div>
       </div>
     </div>
 
-    <div class="md:col-span-2 lg:col-span-2">
+    <div class="md:col-span-3">
       <label for="base-fee" class="block text-sm font-medium text-gray-700">
         Base Fee
       </label>
       <div class="mt-1 relative">
-        <input
-          type="text"
-          name="base-fee"
-          id="base-fee"
-          class="
-            shadow-sm
-            focus:ring-indigo-500 focus:border-indigo-500
-            block
-            w-full
-            pr-16
-            sm:text-sm
-            border-gray-300
-            rounded-md
-          "
-          v-model="baseFee"
-          :placeholder="strBN(props.baseFeePerGas)"
-        />
-        <div
-          class="
-            absolute
-            inset-y-0
-            right-0
-            pr-3
-            flex
-            items-center
-            pointer-events-none
-          "
-        >
-          <span class="text-gray-400 sm:text-sm"> GWei </span>
+        <input type="text" name="base-fee" id="base-fee" autocomplete="off"
+          class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
+          v-model="baseFee" :placeholder="strBN(props.baseFeePerGas)" />
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <span class="font-mono text-gray-400 sm:text-sm"> GWei </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300 tx-table font-mono">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col">Tx Type</th>
+                <th scope="col">Gas Limit</th>
+                <th scope="col" class="end">Tx Fee</th>
+                <th scope="col" class="end">Max Tx Fee</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <template v-for="(_row, _index) in txTypes" :key="_index">
+                <tr v-if="3 > _index || showFullTxTypes">
+                  <td>{{ _row.text }}</td>
+                  <td>
+                    <FormattedBN :bn-value="_row.bn" />
+                  </td>
+                  <td class="end">
+                    <FormattedBN :bn-value="_row.bn.mul(bnFee)" :decimals="18" :padding="9" :prefix="nativeCurrency" />
+                  </td>
+                  <td class="end">
+                    <FormattedBN :bn-value="_row.bn.mul(bnMaxFee)" :decimals="18" :padding="9"
+                      :prefix="nativeCurrency" />
+                  </td>
+                </tr>
+              </template>
+              <tr v-if="!showFullTxTypes" @click="toogleShowFullTxTypes">
+                <td colspan="4" class="w-full text-center hover:font-semibold">
+                  Show More...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style lang="scss">
-input {
-  @apply font-mono;
-}
-</style>

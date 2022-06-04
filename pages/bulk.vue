@@ -11,6 +11,7 @@ const account = useWeb3Account();
 // const balance = useWeb3Balance();
 const nativeSymbol = useNativeSymbol();
 const nativeDecimals = useNativeDecimals();
+const nativeCurrency = useNativeCurrency();
 const contract = ref<ethers.Contract>();
 
 // section: tx
@@ -110,8 +111,6 @@ const bulkTransfer = async () => {
 // mounted
 onMounted(async function () {
   console.log("/contracts/bulk");
-  // console.log(ethers.errors.CALL_EXCEPTION);
-  // console.log(ethers.errors.TRANSACTION_REPLACED);
   await touchContract();
 });
 
@@ -766,9 +765,11 @@ const transferDisabled = computed(() => {
                         <tr v-for="(row, index) in previewRows" :key="index">
                           <td class="hidden md:block">{{ index + 1 }}</td>
                           <td>{{ row.address }}</td>
-                          <td>
-                            <FormattedBN v-if="isERC20" :bn-value="row.amount" :decimals="ERC20Decimals" />
-                            <FormattedBN v-else :bn-value="row.amount" :decimals="nativeDecimals" />
+                          <td class="end">
+                            <FormattedBN v-if="isERC20" :bn-value="row.amount" :decimals="ERC20Decimals"
+                              :prefix="nativeCurrency" />
+                            <FormattedBN v-else :bn-value="row.amount" :decimals="nativeDecimals"
+                              :prefix="nativeCurrency" />
                             {{ symbol }}
                           </td>
                         </tr>

@@ -64,17 +64,14 @@ export const useDefaultDonation = () => computed(() => {
 });
 
 export const useNativeCurrency = () => computed(() => {
-  const chainId = useState<number>('web3.chainId');
+  const nativeSymbol = useNativeSymbol();
 
-  switch (chainId.value) {
-    case 1:
-    case 3:
-    case 4:
-    case 5:
-    case 42:
+  switch (nativeSymbol.value) {
+    case 'ETH':
+    case 'tETH':
       return 'Ξ';
     default:
-      return '';
+      return '0.005';
   }
 });
 

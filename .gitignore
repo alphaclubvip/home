@@ -2,6 +2,7 @@
 
 .vscode
 .idea
+.firebase
 
 node_modules
 *.log*

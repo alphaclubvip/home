@@ -93,7 +93,7 @@ const disValue = computed(() => {
 
 <template>
   <span>
-    <span v-if="prefix">{{ prefix }}</span>
+    <span v-if="prefix" class="fomatted-bn-prefix">{{ prefix }}</span>
     <span>{{ disValue.i }}</span>
     <span v-if="disValue.f.length">.</span>
     <span class="formated-bn" v-for="(part, index) in disValue.f" :key="index">
@@ -103,6 +103,10 @@ const disValue = computed(() => {
 </template>
 
 <style scoped lang='scss'>
+.fomatted-bn-prefix {
+  margin-right: 0.2rem;
+}
+
 .formated-bn {
   margin-right: 0.2rem;
   font-size: 90%;

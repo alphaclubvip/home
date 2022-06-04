@@ -157,6 +157,10 @@
     &:last-child {
       @apply relative pl-3 pr-4 sm:pr-6;
     }
+
+    &.end {
+      @apply relative text-right;
+    }
   }
 
   tbody tr {
@@ -164,23 +168,39 @@
       @apply whitespace-nowrap px-2 py-2 text-sm text-gray-900;
 
       &:first-child {
-        @apply pl-4 pr-3 text-sm sm:pl-6;
+        @apply pl-4 pr-3 sm:pl-6;
       }
 
       &:last-child {
-        @apply relative pl-3 pr-4 text-right text-sm font-medium sm:pr-6;
+        @apply relative pl-3 pr-4 sm:pr-6;
+      }
+
+      &.end {
+        @apply relative text-right;
       }
     }
 
-    &.bottom {
-      @apply bg-rose-200;
+    &:hover {
+      @apply bg-gray-200;
     }
 
     &:nth-child(even) {
       @apply bg-gray-50;
 
+      &:hover {
+        @apply bg-gray-200;
+      }
+
       &.bottom {
         @apply bg-rose-50;
+      }
+    }
+
+    &.bottom {
+      @apply bg-rose-100;
+
+      &:hover {
+        @apply bg-rose-200;
       }
     }
   }
