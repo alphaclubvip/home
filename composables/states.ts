@@ -20,9 +20,10 @@ export const useWeb3AccountENS = () => useState<string>('web3.account.ens');
 export const web3AccountAvatar = () => useState<string>('web3.account.avatar');
 
 export const useNativeSymbol = () => computed(() => {
-  const chainId = useWeb3ChainId();
+  const chainId = useState<number>('web3.chainId');
 
   switch (chainId.value) {
+    // ETH
     case 1:
       return 'ETH';
     case 3:
@@ -30,12 +31,15 @@ export const useNativeSymbol = () => computed(() => {
     case 5:
     case 42:
       return 'tETH';
+    // BNB
     case 56:
       return 'BNB';
     case 97:
       return 'tBNB';
+    // HT
     case 128:
       return 'HT';
+    // MATIC
     case 137:
       return 'MATIC';
     default:
@@ -43,8 +47,24 @@ export const useNativeSymbol = () => computed(() => {
   }
 });
 
+export const useDefaultDonation = () => computed(() => {
+  const nativeSymbol = useNativeSymbol();
+
+  switch (nativeSymbol.value) {
+    case 'BNB':
+    case 'tBNB':
+      return '0.01';
+    case 'HT':
+      return '0.01';
+    case 'MATIC':
+      return '0.01';
+    default:
+      return '0.005';
+  }
+});
+
 export const useNativeCurrency = () => computed(() => {
-  const chainId = useWeb3ChainId();
+  const chainId = useState<number>('web3.chainId');
 
   switch (chainId.value) {
     case 1:

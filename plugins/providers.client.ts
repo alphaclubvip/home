@@ -10,6 +10,7 @@ export default defineNuxtPlugin(async function (nuxtApp) {
   // nuxtApp.provide('ETH', new ethers.providers.JsonRpcProvider(config.ETH_RPOVIDER));
   // nuxtApp.provide('BSC', new ethers.providers.JsonRpcProvider(config.BSC_RPOVIDER));
 
+  // const web3Provider = useState<ethers.providers.Web3Provider>('web3.provider');
   const web3Account = useState<string>('web3.account', () => "");
   const web3Balance = useState<ethers.BigNumber>('web3.balance', () => ethers.BigNumber.from(0));
   const web3AccountENS = useState<string>('web3.account.ens', () => "");
@@ -62,6 +63,7 @@ export default defineNuxtPlugin(async function (nuxtApp) {
     }
 
     const provider = new ethers.providers.Web3Provider(_provider);
+    // web3Provider.value = provider;
     await provider.send("eth_requestAccounts", []).then(async (_accounts) => {
       // account
       web3Account.value = ethers.utils.getAddress(_accounts[0]);

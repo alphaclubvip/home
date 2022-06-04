@@ -449,13 +449,14 @@ const bnAmountSum = computed(() => {
 });
 
 // input: donate
-const inputDonate = ref<string>("0.005");
+const inputDonate = ref<string>("");
+const defaultDonation = useDefaultDonation();
 const bnDonate = computed(() => {
   if (inputDonate.value) {
     return ethers.utils.parseUnits(inputDonate.value, nativeDecimals.value);
   }
 
-  return ethers.BigNumber.from(0);
+  return ethers.utils.parseUnits(defaultDonation.value, nativeDecimals.value);
 });
 watch(inputDonate, () => {
   inputDonate.value = formatAmount(inputDonate.value, nativeDecimals.value);
@@ -634,7 +635,7 @@ const transferDisabled = computed(() => {
 <template>
   <div>
     <SBulkHero />
-    <Connected>
+    <Connected :chain-ids="[1, 4, 56, 97]">
       <LAutoWidth class="py-16">
         <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6">
           <div class="md:col-span-3">
@@ -663,7 +664,7 @@ const transferDisabled = computed(() => {
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
                 v-model="inputAmount" />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span class="text-gray-400 sm:text-sm">
+                <span class="font-mono text-gray-400 sm:text-sm">
                   {{ symbol }}
                 </span>
               </div>
@@ -709,17 +710,20 @@ const transferDisabled = computed(() => {
               Dontate
             </label>
             <div class="mt-1 relative">
-              <input type="text" name="donate" id="donate"
-                class="shadow-sm focus:ring-green-500 focus:border-indigo-500 block w-full bg-green-50 pr-16 font-mono sm:text-sm border-gray-300 rounded-md"
-                v-model="inputDonate" />
+              <input type="text" name="donate" id="donate" autocomplete="off"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400"
+                v-model="inputDonate" :placeholder="defaultDonation" />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span class="text-gray-400 sm:text-sm">
+                <span class="font-mono text-gray-400 sm:text-sm">
                   {{ nativeSymbol }}
                 </span>
               </div>
             </div>
-            <p class="mt-2 text-sm font-semibold text-green-600">
+            <p v-if="bnDonate.gt(0)" class="mt-2 text-sm text-gray-500">
               Donate to help us build more useful tools.
+            </p>
+            <p v-else class="mt-2 text-sm text-orange-600">
+              Sad, but of course you can use this for FREE.
             </p>
           </div>
 

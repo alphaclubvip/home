@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ethers } from "ethers";
+import utilWeb3 from '@/utils/web3';
 
 const details = ref(false);
 const tracking = ref();
@@ -78,8 +79,8 @@ function sortTransactionByMaxFee(a: ethers.Transaction, b: ethers.Transaction) {
 }
 
 async function track() {
-  const { $web3 } = useNuxtApp();
-  const block = await $web3.getBlockWithTransactions("pending");
+  const _provider = await utilWeb3.getProvider();
+  const block = await _provider.getBlockWithTransactions("pending");
 
   nextBlock.value = block;
 
