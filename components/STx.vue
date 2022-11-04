@@ -84,7 +84,7 @@ const txFailed = computed(() => {
         </span>
       </div>
       <div v-else class="mx-auto mt-4 font-mono md:text-lg text-gray-500 animate-pulse">
-        Wating for confirmations...
+        Waiting for confirmations...
       </div>
     </template>
   </div>

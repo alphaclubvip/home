@@ -26,6 +26,8 @@ export const useNativeSymbol = () => computed(() => {
     // ETH
     case 1:
       return 'ETH';
+    case 10001:
+      return 'ETHW';
     case 3:
     case 4:
     case 5:
@@ -58,6 +60,8 @@ export const useDefaultDonation = () => computed(() => {
       return '0.01';
     case 'MATIC':
       return '0.01';
+    case 'ETHW':
+      return '0.01';
     default:
       return '0.005';
   }
@@ -68,6 +72,7 @@ export const useNativeCurrency = () => computed(() => {
 
   switch (nativeSymbol.value) {
     case 'ETH':
+    case 'ETHW':
     case 'tETH':
       return 'Ξ';
     default:

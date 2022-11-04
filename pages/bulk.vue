@@ -53,8 +53,7 @@ const deleteTx = () => {
 const approveERC20 = async () => {
   console.log("approveERC20");
 
-  const _signer = await utilWeb3.getSigner();
-  const ERC20Contract = new ethers.Contract(ERC20Address.value, ERC20_ABI, _signer);
+  const ERC20Contract = await utilWeb3.makeContract(ERC20Address.value, ERC20_ABI);
 
   deleteTx();
   txName.value = "Approve";
@@ -136,41 +135,27 @@ const symbol = computed(() => {
 });
 
 // select: type
-const typeOptions = [
-  {
-    value: "A",
-    title: "Type A - Bulk Transfer ETH",
-  },
-  {
-    value: "B",
-    title: "Type B - Bulk Transfer ETH (Same Value)",
-  },
-  {
-    value: "C",
-    title: "Type C - Bulk Transfer ERC20",
-  },
-  {
-    value: "D",
-    title: "Type D - Bulk Transfer ERC20 (Same Value)",
-  },
-  // {
-  //   value: "",
-  //   title: "",
-  // },
-  // {
-  //   value: "",
-  //   title: "",
-  // },
-  // {
-  //   value: "",
-  //   title: "",
-  // },
-  // {
-  //   value: "",
-  //   title: "",
-  // },
-];
-const type = ref<string>(typeOptions[0].value);
+const typeOptions = computed(() => {
+  return [
+    {
+      value: "A",
+      title: `Type A - Bulk Transfer ${nativeSymbol.value}`,
+    },
+    {
+      value: "B",
+      title: `Type B - Bulk Transfer ${nativeSymbol.value} (Same Value)`,
+    },
+    {
+      value: "C",
+      title: "Type C - Bulk Transfer ERC20",
+    },
+    {
+      value: "D",
+      title: "Type D - Bulk Transfer ERC20 (Same Value)",
+    },
+  ]
+});
+const type = ref<string>('A');
 watch(type, () => {
   console.log("type: start");
   touchList();
@@ -180,10 +165,10 @@ watch(type, () => {
 const typeDesc = computed(() => {
   switch (type.value) {
     case "A":
-      return "Transfer different amounts of ETH to multiple addresses.";
+      return `Transfer different amounts of ${nativeSymbol.value} to multiple addresses.`;
       break;
     case "B":
-      return "Transfer a same amount of ETH to multiple addresses, less than type A.";
+      return `Transfer a same amount of ${nativeSymbol.value} to multiple addresses, less than type A.`;
       break;
     case "C":
       return "Transfer different amounts of ERC20 token to multiple addresses.";
@@ -634,7 +619,7 @@ const transferDisabled = computed(() => {
 <template>
   <div>
     <SBulkHero />
-    <Connected :chain-ids="[1, 4, 56, 97]">
+    <Connected :chain-ids="[1, 4, 5, 56, 97, 10001]">
       <LAutoWidth class="py-16">
         <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6">
           <div class="md:col-span-3">

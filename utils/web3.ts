@@ -20,8 +20,14 @@ const getSigner = async function () {
   return provider.getSigner();
 }
 
+const makeContract = async function (address: string, abi: ethers.ContractInterface) {
+  const _signer = await getSigner();
+  return new ethers.Contract(address, abi, _signer);
+}
+
 export default {
   web3Modal: web3Modal,
   getProvider: getProvider,
   getSigner: getSigner,
+  makeContract: makeContract,
 }
