@@ -24,7 +24,7 @@
     "@dicebear/big-smile": "^4.10.5",
     "@headlessui/vue": "^1.6.1",
     "@heroicons/vue": "^1.0.6",
-    "@metamask/detect-provider": "^1.2.0",
+    "@metamask/detect-provider": "^2.0.0",
     "ethers": "^5.6.5",
     "web3modal": "^1.9.9"
   }
