@@ -106,7 +106,6 @@ const bulkTransfer = async () => {
     // ["0x0000002d55c53Ed508AB99f88e0473c0D4e002f7", "0x000000d2537D519b693f8ca4c8a3fB8A36EE8990"], 1
 }
 
-
 // mounted
 onMounted(async function () {
     console.log("/contracts/bulk");
@@ -618,7 +617,7 @@ const transferDisabled = computed(() => {
 
 <template>
     <div>
-        <SBulkHero />
+        <SHeroMonarch />
         <Connected :chain-ids="[1, 4, 5, 56, 97, 10001]">
             <LAutoWidth class="py-16">
                 <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6">
