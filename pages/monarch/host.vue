@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { TransactionResponse, TransactionReceipt } from '@/utils/ethers';
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/outline";
 import utilWeb3 from '@/utils/web3';
-import CONTRACT_JSON from '~~/contracts/MonarchMixer.json';
+import CONTRACT_JSON from '@/contracts/MonarchMixer.json';
 
 const config = useRuntimeConfig();
 const account = useWeb3Account();
@@ -88,6 +88,79 @@ async function touchContract() {
         contractContractURI.value = await contract.value.contractURI();
     }
 }
+
+interface MintCode {
+    tokenId: number,
+    proofId: number,
+    proof: string[]
+}
+
+
+// input: Mint Code
+const mintCodeJSON = ref<MintCode>();
+const mintCodeError = ref<string>("");
+const inputMintCode = ref<string>("");
+
+const mintButtonTXT = computed(() => {
+    if (mintCodeJSON.value) {
+        return `Mint Mixer#${mintCodeJSON.value.tokenId}`;
+    } else {
+        return "Mint";
+    }
+});
+
+watch(inputMintCode, async () => {
+    const s = inputMintCode.value.trim();
+    if (s) {
+        try {
+            const strJson = new TextDecoder().decode(ethers.utils.base58.decode(s));
+            mintCodeJSON.value = JSON.parse(strJson);
+            mintCodeError.value = undefined;
+        } catch (e) {
+            mintCodeJSON.value = undefined;
+            mintCodeError.value = 'MintCode: invalid';
+        }
+
+        if (mintCodeJSON.value) {
+            const resp = await contract.value.check(account.value, mintCodeJSON.value.tokenId, mintCodeJSON.value.proofId, mintCodeJSON.value.proof);
+
+            switch (resp.err) {
+                case 1:
+                    mintCodeError.value = `You have claimed before`;
+                    break;
+                case 2:
+                    mintCodeError.value = 'MintCode is already used';
+                    break;
+                case 3:
+                    mintCodeError.value = 'MintCode is not valid';
+                    break;
+                case 0:
+                    mintCodeError.value = undefined;
+                    break;
+            }
+
+            // console.log(mintCodeJSON.value.tokenId);
+            // console.log(mintCodeJSON.value.proofId);
+            // console.log(mintCodeJSON.value.proof);
+        }
+    } else {
+        mintCodeJSON.value = undefined;
+        mintCodeError.value = undefined;
+    }
+});
+
+
+
+const mint = async () => {
+    console.log("mint");
+    deleteTx();
+    txName.value = "Mint";
+    tx.value = await contract.value.mint(mintCodeJSON.value.tokenId, mintCodeJSON.value.proofId, mintCodeJSON.value.proof)
+        .catch((e: Error) => {
+            deleteTx();
+        });
+}
+
 
 
 // input: Base URI
@@ -398,6 +471,30 @@ watch(account, async () => {
             <LAutoWidth class="py-16">
                 <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 md:grid-cols-6">
 
+                    <div class="md:col-span-6">
+                        <label for="mint-code" class="block font-medium text-gray-700">
+                            Mint Code
+                        </label>
+                        <div class="mt-1">
+                            <textarea id="mint-code" name="mint-code" rows="10"
+                                class="block w-full focus:ring-indigo-500 focus:border-indigo-500 border border-gray-300 rounded-md shadow-sm font-mono text-sm placeholder:text-gray-400"
+                                v-model="inputMintCode" placeholder="Input Mint Code Here..." />
+                        </div>
+                        <p v-if="mintCodeError" class="mt-2 text-sm font-semibold text-rose-500">
+                            {{ mintCodeError }}
+                        </p>
+                    </div>
+
+                    <div class="md:col-span-6 flex gap-4">
+                        <button type="button" class="flex-1 w-full jt-btn indigo" @click="mint"
+                            :disabled="mintCodeJSON === undefined || mintCodeError !== undefined">
+                            {{ mintButtonTXT }}
+                        </button>
+                    </div>
+
+                    <STx class="md:col-span-6 mt-4 lg:mt-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName"
+                        :tx-replaced="txReplaced" />
+
                     <div v-if="accountIsOwner" class="md:col-span-6 lg:col-span-3">
                         <label for="base-uri" class="block font-medium text-gray-700">
                             BaseURI
@@ -408,7 +505,7 @@ watch(account, async () => {
                                 v-model="inputNewBaseURI"
                                 :placeholder="contractBaseURI ? contractBaseURI : 'BaseURI'" />
                             <div v-if="newBaseURI" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <button class="font-mono text-indigo-500 sm:text-sm" @click="setURI">
+                                <button class="btn-clear font-mono text-indigo-500 sm:text-sm" @click="setURI">
                                     EXEC
                                 </button>
                             </div>
@@ -483,7 +580,7 @@ watch(account, async () => {
                             <input type="text" name="timestamp" id="timestamp" autocomplete="off"
                                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-16 font-mono sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400"
                                 v-model="inputSetWhitelistTimestamp"
-                                :placeholder="placeHolderWLTimestamp ? placeHolderWLTimestamp : 'Timestamp'" />
+                                :placeholder="placeHolderWLTimestamp ? placeHolderWLTimestamp.toString() : 'Timestamp'" />
                             <div v-if="setWhitelistTimestamp" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                                 <button class="font-mono text-indigo-500 sm:text-sm" @click="setWhitelist">
                                     EXEC
@@ -559,8 +656,6 @@ watch(account, async () => {
                     </div>
 
 
-                    <STx class="md:col-span-6 mt-4 lg:mt-6" :tx="tx" :tx-receipt="txReceipt" :tx-name="txName"
-                        :tx-replaced="txReplaced" />
 
                     <div class="md:col-span-6 flex gap-4">
                         <!-- <button v-if="showApprove" type="button" class="flex-1 w-full jt-btn pink"
@@ -577,3 +672,4 @@ watch(account, async () => {
         </Connected>
     </div>
 </template>
+
