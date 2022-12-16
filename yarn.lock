@@ -843,10 +843,10 @@
     protobufjs "^6.10.0"
     yargs "^16.2.0"
 
-"@headlessui/vue@^1.6.1":
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/@headlessui/vue/-/vue-1.6.1.tgz#772dde92ec3a3a494c827b1643a6d5538baabd29"
-  integrity sha512-fccGN1hsFvS0P73NplZoOdX1rhyaH5jIQE9IUKNaaJC72mQjR3lVvZldo+iiLF5X1bqgl6pDixWdqS2kMGfFxA==
+"@headlessui/vue@^1.7.6":
+  version "1.7.6"
+  resolved "https://registry.yarnpkg.com/@headlessui/vue/-/vue-1.7.6.tgz#2847a5cdd78deea2b4684f6a4ec42f771cf72581"
+  integrity sha512-G5Y23FLCk8/pkv/m/UMEMhISFn6mn2mDpmFuVIT7kT8536SSmxuXT6aJh3FSpztYIXjjE0hbD2qezmJ2OHtMjg==
 
 "@heroicons/vue@^1.0.6":
   version "1.0.6"
