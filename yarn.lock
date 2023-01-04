@@ -320,10 +320,10 @@
   dependencies:
     mime "^3.0.0"
 
-"@dicebear/avatars@^4.10.2":
-  version "4.10.2"
-  resolved "https://registry.yarnpkg.com/@dicebear/avatars/-/avatars-4.10.2.tgz#140ff080752d2923ffdba7f4664c8937999bfd3f"
-  integrity sha512-7Qd4Mmq9jeMkWtPZgY89GxFZmu1ERSTSTSEbeNfgVzqxZ0M2NHKcc/uynFMpU13w2BGesCDGT3ulmKyCoYbMGA==
+"@dicebear/avatars@^4.10.8":
+  version "4.10.8"
+  resolved "https://registry.yarnpkg.com/@dicebear/avatars/-/avatars-4.10.8.tgz#9d620f32769dea1319f62f67d4fd9fa30cf0ecac"
+  integrity sha512-jni3+W1yRRh4sJYmuQUZ8JpKI9aEEud53TUcxNFtntdRyOUJygIFdC5JPKNac58eALnBTZZ4ox7b+oeo0Ux/oA==
   dependencies:
     "@types/json-schema" "^7.0.7"
     pure-color "^1.3.0"
